@@ -22,66 +22,13 @@ async function getLocationByIP(ip) {
   };
 }
 
-const GEONAMES_USER = process.env.GEONAMES_USER || 'vvvholder';
-
-// Глобальный кэш для всех GeoNames запросов (экономим API лимиты)
-const _geonamesCache = new Map();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 часа
-
-// Кэшированный fetch для GeoNames
-async function cachedGeonamesFetch(url) {
-  const cached = _geonamesCache.get(url);
-  if (cached && Date.now() - cached.time < CACHE_TTL) {
-    return cached.data;
-  }
-  
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-    _geonamesCache.set(url, { data, time: Date.now() });
-    return data;
-  } catch (error) {
-    console.error('GeoNames API error:', error);
-    // Возвращаем кэшированные данные даже если устарели
-    if (cached) return cached.data;
-    throw error;
-  }
-}
-
-// Кэш для getJSON запросов ADM1 (экономим rate limit)
-const _admCache = new Map();
-
-async function _getAdminName(entry, cityNameLow) {
-  if (!entry) return '';
-  const geonameId = entry.geonameId;
-  if (!_admCache.has(geonameId)) {
-    try {
-      const d = await cachedGeonamesFetch(
-        'http://api.geonames.org/getJSON?geonameId=' + geonameId + '&username=' + GEONAMES_USER + '&lang=ru'
-      );
-      _admCache.set(geonameId, {
-        name: d.name || entry.name || '',
-        ruAlts: (d.alternateNames || []).filter(a => a.lang === 'ru').map(a => a.name),
-      });
-    } catch {
-      _admCache.set(geonameId, { name: entry.name || '', ruAlts: [] });
-    }
-  }
-  const { name, ruAlts } = _admCache.get(geonameId);
-  const adminKw = /область|край|республика|округ|автономн/i;
-  const withKw = ruAlts.find(a => adminKw.test(a));
-  if (withKw) return withKw;
-  if (name.toLowerCase() === cityNameLow) {
-    const notCity = ruAlts.find(a => a.toLowerCase() !== cityNameLow);
-    if (notCity) return notCity;
-  }
-  return name;
-}
+// Кэш для иерархии городов
+const _hierCache = new Map();
 
 function _hasCyrillic(s) { return /[а-яёА-ЯЁ]/.test(s || ''); }
 function _hasLatin(s)    { return /[a-zA-Z]/.test(s || ''); }
 
-// Поиск города через локальную базу GeoNames
+// Поиск города через локальную базу
 function searchCity(query) {
   const results = geoDB.search(query, 10);
   return results.map(c => ({
@@ -97,10 +44,7 @@ function searchCity(query) {
   }));
 }
 
-// Кэш иерархии по координатам (ключ: "lat,lon" округлённые до 2 знаков)
-const _hierCache = new Map();
-
-// Получить иерархию по координатам через GeoNames
+// Получить иерархию по координатам используя локальную базу
 async function getCityHierarchy(lat, lon) {
   const key = `${Math.round(lat * 100) / 100},${Math.round(lon * 100) / 100}`;
   if (_hierCache.has(key)) return _hierCache.get(key);
