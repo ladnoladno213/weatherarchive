@@ -1,0 +1,78 @@
+<%- include('_header') %>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb-inner">
+    <a href="/" class="bc-link">Все страны</a>
+    <span class="bc-sep">›</span>
+    <a href="/<%= country.nameEn %>" class="bc-link"><%= country.name %></a>
+    <span class="bc-sep">›</span>
+    <span class="bc-current"><%= admin1 %></span>
+  </div>
+</div>
+<div class="rp5-wrapper" style="padding: 12px 10px;">
+  <h2 class="geo-title">Города в <%= admin1 %>, <%= country.name %></h2>
+  <% if (!cities.length) { %>
+    <p style="color:#888; padding: 20px 0;">Города не найдены.</p>
+  <% } else { %>
+    <%
+      const letters = [...new Set(cities.map(c => c.name[0]))].sort((a,b) => a.localeCompare(b,'ru'));
+    %>
+    <% letters.forEach(letter => { %>
+      <div class="geo-letter-block">
+        <div class="geo-letter"><%= letter %></div>
+        <div class="geo-list">
+          <% cities.filter(c => c.name[0] === letter).forEach(c => { %>
+            <a href="/weather?id=<%= c.id %>" class="geo-item">
+              <%= c.name %>
+            </a>
+          <% }); %>
+        </div>
+      </div>
+    <% }); %>
+  <% } %>
+</div>
+<script>
+const input = document.getElementById('cityInput');
+const suggestions = document.getElementById('searchSuggestions');
+let timer;
+input.addEventListener('input', function() {
+  clearTimeout(timer);
+  const q = this.value.trim();
+  if (q.length < 2) { suggestions.innerHTML = ''; suggestions.style.display = 'none'; return; }
+  timer = setTimeout(async () => {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if (!data.length) { suggestions.style.display = 'none'; return; }
+    suggestions.innerHTML = data.map(c =>
+      `<div class="suggestion-item" data-name="${c.name}" data-id="${c.id || ''}">` + c.name + (c.region ? ', ' + c.region : '') + ', ' + c.country + '</div>'
+    ).join('');
+    suggestions.style.display = 'block';
+    suggestions.querySelectorAll('.suggestion-item').forEach(el => {
+      el.addEventListener('click', () => {
+        suggestions.style.display = 'none';
+        const id = el.dataset.id;
+        if (id) { window.location.href = '/weather?id=' + id; }
+        else { input.value = el.dataset.name; document.getElementById('searchForm').submit(); }
+      });
+    });
+  }, 300);
+});
+document.addEventListener('click', e => {
+  if (!suggestions.contains(e.target) && e.target !== input) suggestions.style.display = 'none';
+});
+document.querySelectorAll('.hbtn-wrap').forEach(wrap => {
+  const btn = wrap.querySelector('.hbtn');
+  const dd  = wrap.querySelector('.hbtn-dropdown');
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    document.querySelectorAll('.hbtn-dropdown.open').forEach(d => { if(d !== dd) d.classList.remove('open'); });
+    dd.classList.toggle('open');
+  });
+});
+document.addEventListener('click', e => {
+  document.querySelectorAll('.hbtn-dropdown.open').forEach(d => {
+    if (!d.contains(e.target)) d.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>

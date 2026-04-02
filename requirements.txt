@@ -1,0 +1,16 @@
+# RP5 Downloader Dependencies
+
+# HTTP requests
+requests>=2.31.0
+
+# Data processing
+pandas>=2.0.0
+
+# Optional: for better performance
+numpy>=1.24.0
+
+# Progress bar for mass downloads
+tqdm>=4.65.0
+
+# Selenium for full automation (REQUIRED for rp5_selenium_downloader.py)
+selenium>=4.15.0

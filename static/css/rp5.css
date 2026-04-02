@@ -1,0 +1,518 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, Helvetica, sans-serif; font-size: 13px; background: #e8edf2; color: #333; }
+
+.rp5-wrapper { max-width: 1100px; margin: 0 auto; }
+.rp5-wrapper-archive { max-width: 100%; padding: 0 10px; }
+.rp5-wrapper-wide { background: #fff; }
+
+/* ХЛЕБНЫЕ КРОШКИ */
+.breadcrumb-inner { max-width: 1100px; margin: 0 auto; padding: 5px 10px; font-size: 12px; }
+.bc-link { color: #1a5cb5; text-decoration: none; }
+.bc-link:hover { text-decoration: underline; }
+.bc-sep { color: #888; margin: 0 4px; }
+.bc-current { color: #333; font-weight: bold; }
+
+/* ШАПКА */
+.header-bg { background: url('/resources/headerBg_1.png') repeat-x; width: 100%; box-sizing: border-box; }
+
+/* Верхняя полоса */
+.header-topbar { background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.1); }
+.header-topbar-inner { max-width: 1100px; margin: 0 auto; padding: 4px 10px; }
+.topbar-nav { display: flex; gap: 16px; }
+.topbar-nav a { color: #cde; font-size: 12px; text-decoration: none; }
+.topbar-nav a:hover { color: #fff; text-decoration: underline; }
+
+.header-bg { background: url('/resources/headerBg_1.png') repeat-x; width: 100%; box-sizing: border-box; }
+
+/* Основная часть */
+.header-main { padding: 8px 0 12px; }
+.header-main-inner { max-width: 1100px; margin: 0 auto; padding: 0 10px; display: flex; align-items: center; gap: 12px; }
+
+.logo-img { height: 40px; }
+
+/* Центр */
+.header-center { flex: 1; }
+.header-countries { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+.countries-label { color: #acd; font-size: 12px; }
+.country-link { color: #def; font-size: 12px; text-decoration: none; }
+.country-link:hover { text-decoration: underline; color: #fff; }
+.country-all { color: #ffd; font-weight: bold; }
+
+/* Правые кнопки */
+.header-btns { display: flex; align-items: center; gap: 4px; }
+.hbtn-wrap { position: relative; }
+.hbtn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
+.hbtn-sprite { background-color: transparent; }
+/* Hover и активное состояние */
+#langWrap .hbtn:hover,
+#langWrap:has(.hbtn-dropdown.open) .hbtn     { background-image: url('/resources/sprites/sprite_h.png'); background-position: -115px 0px; width: 115px; height: 35px; }
+#settingsWrap .hbtn:hover,
+#settingsWrap:has(.hbtn-dropdown.open) .hbtn { background-image: url('/resources/sprites/sprite_h.png'); background-position: -230px 0px; width: 115px; height: 35px; }
+
+/* Текст на кнопках хидера */
+.hbtn-sprite { position: relative; }
+.hbtn-label {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #333;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.hbtn:hover .hbtn-label,
+.hbtn-wrap:has(.hbtn-dropdown.open) .hbtn-label { color: #000; }
+
+/* Dropdown */
+.hbtn-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  box-shadow: 0 3px 10px rgba(0,0,0,.2);
+  z-index: 200;
+  min-width: 140px;
+  padding: 6px 0;
+}
+.hbtn-dropdown.open { display: block; }
+.hbtn-dropdown-wide { min-width: 260px; padding: 8px 12px; }
+.hbtn-dropdown-title { font-size: 12px; font-weight: bold; color: #555; padding: 0 12px 6px; border-bottom: 1px solid #eee; margin-bottom: 4px; }
+.hbtn-option { display: block; padding: 5px 12px; font-size: 13px; color: #333; text-decoration: none; }
+.hbtn-option:hover { background: #e8f0fb; }
+.hbtn-option.active { font-weight: bold; color: #1a5cb5; }
+
+/* Настройки */
+.settings-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+.settings-row:last-child { border-bottom: none; }
+.settings-row label { font-size: 12px; color: #555; white-space: nowrap; }
+.settings-select { font-size: 12px; border: 1px solid #ccc; border-radius: 3px; padding: 2px 4px; background: #fff; }
+.settings-save-row { justify-content: flex-end; border-bottom: none; padding-top: 8px; }
+.settings-save-btn { background: #1a5cb5; color: #fff; border: none; border-radius: 3px; padding: 5px 16px; font-size: 12px; cursor: pointer; }
+.settings-save-btn:hover { background: #1448a0; }
+
+/* ПОИСК */
+.search-form { position: relative; display: flex; align-items: center; }
+.search-input { width: 220px; height: 35px; padding: 0 8px; border: 1px solid #aaa; border-radius: 3px; font-size: 13px; outline: none; box-sizing: border-box; }
+.search-btn { background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; outline: none; }
+.search-btn:focus { outline: none; }
+.search-suggestions { position: absolute; top: 100%; left: 0; width: 280px; background: #fff; border: 1px solid #aaa; z-index: 100; border-radius: 0 0 3px 3px; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.suggestion-item { padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.suggestion-item:hover { background: #e8f0fb; }
+
+/* ТЕКУЩАЯ ПОГОДА */
+.current-weather { max-width: 1100px; margin: 8px auto; background: linear-gradient(to bottom, #004B99 0%, #00A2DD 100%); padding: 8px 12px; display: flex; align-items: baseline; gap: 12px; border-radius: 6px; }
+.current-temp { font-size: 22px; font-weight: bold; color: #fff; }
+.current-feels { font-size: 13px; color: #cde; }
+.current-archive { flex: 1; font-size: 12px; color: #fff; text-align: right; line-height: 1.4; }
+.current-archive .archive-link { color: #fff; text-decoration: underline; white-space: nowrap; }
+.current-archive .archive-link:hover { color: #cde; }
+
+/* ССЫЛКИ НА АЭРОПОРТЫ */
+.airport-links { max-width: 1100px; margin: 4px auto 0; padding: 0 12px; display: flex; flex-direction: column; gap: 4px; }
+.airport-link { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #1a5cb5; font-size: 12px; }
+.airport-link:hover { text-decoration: underline; }
+.airport-icon { display: inline-block; width: 16px; height: 16px; background: url('/resources/sprites/sprite_w.png') -100px -140px no-repeat; vertical-align: middle; }
+.airport-arrow { display: inline-block; width: 3px; height: 5px; background: url('/resources/sprites/sprite_w.png') -20px -170px no-repeat; vertical-align: middle; margin: 0 4px; }
+
+/* ССЫЛКА НА ПРОГНОЗ ПОГОДЫ */
+.forecast-link-wrapper { max-width: 1100px; margin: 4px auto 0; padding: 0 12px; }
+.forecast-link { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; color: #1a5cb5; font-size: 12px; }
+.forecast-link:hover { text-decoration: underline; }
+.forecast-icon { display: inline-block; width: 24px; height: 24px; background: url('/resources/sprites/sprite_w.png') -326px -134px no-repeat; vertical-align: middle; }
+.forecast-arrow { display: inline-block; width: 3px; height: 5px; background: url('/resources/sprites/sprite_w.png') -20px -170px no-repeat; vertical-align: middle; margin: 0 4px; }
+
+/* ВКЛАДКИ */
+.tabs-row { display: flex; flex-wrap: nowrap; padding: 4px 0 0; align-items: flex-end; border-bottom: 2px solid #a0b4c8; }
+.tab-btn { display: inline-flex; align-items: stretch; text-decoration: none; flex: 1; margin-left: -20px; }
+.tab-btn:first-child { margin-left: 0; }
+.tab-btn .tab-bg-inactive,
+.tab-btn .tab-bg-active { flex: 1; display: flex; align-items: center; }
+.tab-label { padding: 0 8px; font-size: 13px; color: #fff; white-space: nowrap; }
+.tab-label-weekend { color: #ffa0a0; }
+.tab-active .tab-label { color: #333; }
+.tab-active .tab-label-weekend { color: #c00; }
+
+/* ТАБЛИЦА */
+.forecast-wrap { overflow-x: auto; background: transparent; }
+.forecastTable { border-collapse: collapse; width: auto; min-width: 600px; font-size: 12px; }
+
+/* Все ячейки — без границ по умолчанию */
+.forecastTable td { border: none; padding: 3px 4px; text-align: center; white-space: nowrap; vertical-align: middle; min-width: 38px; max-width: 38px; width: 38px; }
+.forecastTable td.title-cell { min-width: 130px; max-width: 130px; width: 130px; white-space: normal; }
+.forecastTable td.title-cell a { color: #333; text-decoration: none; }
+.forecastTable td.title-cell a:hover { text-decoration: underline; }
+
+/* Вертикальные линии только между днями */
+.forecastTable td.day-border-left { border-left: 1px solid #a0b4c8; }
+
+/* Горизонтальные линии между группами строк */
+.forecastTable tr.row-time td          { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-fog td           { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-feels td         { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-pressure td      { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-wind-dir td      { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-humidity td      { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-sun td           { border-bottom: 1px solid #a0b4c8; }
+.forecastTable tr.row-moon td          { border-bottom: 1px solid #a0b4c8; }
+
+/* Заголовок дат — всегда с нижней линией */
+.forecastTable tr.row-dates td { border-bottom: 1px solid #a0b4c8; }
+
+/* Фоны ячеек день/ночь */
+.cell-d  { background: #fff; }
+.cell-d2 { background: #fff; }
+.cell-n  { background: #d8e4f0; }
+.cell-n2 { background: #ccdaec; }
+td.cell-first { background: #d8e4f0 !important; }
+td.cell-last  { background: #d8e4f0 !important; }
+
+/* Все title-cell белые, левый sticky */
+.forecastTable td.title-cell { background: #fff !important; text-align: right; padding-right: 6px; }
+.forecastTable td.title-cell:first-child { position: sticky; left: 0; z-index: 3; border-right: 1px solid #a0b4c8; text-align: right; }
+/* Правый title-cell — sticky справа, текст по левому краю */
+.title-cell-right { position: sticky; right: 0; z-index: 3; border-left: 1px solid #a0b4c8 !important; text-align: left !important; padding-left: 6px; }
+
+/* Строки ветра, влажности, солнца и луны — белый фон */
+.row-wind-speed td, .row-wind-gust td, .row-wind-dir td,
+.row-humidity td, .row-sun td, .row-moon td { background: #fff !important; }
+
+/* Ночные ячейки в основном блоке — JS перекрасит через position:relative оверлей */
+td.cell-first, td.cell-last { background: #d8e4f0 !important; }
+
+/* Заголовок дат */
+.forecast-date { background: #fff; color: #000; font-weight: bold; font-size: 12px; padding: 4px 4px 4px 2px; border-bottom: 1px solid #a0b4c8; text-align: left !important; overflow: hidden; white-space: nowrap; }
+.forecast-date.weekend { background: #fff; color: #c00; }
+/* Убираем левую границу у ячеек дат */
+.forecast-date.day-border-left { border-left: none; }
+
+/* Температура — цветовая шкала */
+.tc-50  { color: #5c1a1a; font-weight: bold; }
+.tc-40  { color: #8b2020; font-weight: bold; }
+.tc-30  { color: #c0392b; font-weight: bold; }
+.tc-25  { color: #e05c2a; font-weight: bold; }
+.tc-20  { color: #e8922a; font-weight: bold; }
+.tc-15  { color: #b89000; font-weight: bold; }
+.tc-10  { color: #5a9030; font-weight: bold; }
+.tc-5   { color: #2a8850; font-weight: bold; }
+.tc-0   { color: #3aacac; font-weight: bold; }
+.tc-m5  { color: #4a88c8; font-weight: bold; }
+.tc-m10 { color: #3368b8; font-weight: bold; }
+.tc-m15 { color: #2248a8; font-weight: bold; }
+.tc-m20 { color: #442298; font-weight: bold; }
+.tc-m30 { color: #661888; font-weight: bold; }
+.tc-m40 { color: #991888; font-weight: bold; }
+
+/* Давление */
+.press-vlow  { color: #1a6fc4; font-weight: bold; }
+.press-low   { color: #4a9fd4; font-weight: bold; }
+.press-high  { color: #e07820; font-weight: bold; }
+.press-vhigh { color: #c04000; font-weight: bold; }
+
+/* Влажность */
+.hum-vlow     { color: #c04000; font-weight: bold; }
+.hum-low      { color: #e07820; font-weight: bold; }
+.hum-elevated { color: #4a9fd4; font-weight: bold; }
+.hum-high     { color: #1a6fc4; font-weight: bold; }
+.hum-vhigh    { color: #0a3a8a; font-weight: bold; }
+
+/* Ветер — шкала Бофорта */
+.wind-b4  { display:inline-block; animation: wbpulse 4s ease-in-out infinite;   --ps:1.02; color:#22aa55; font-weight:bold; }
+.wind-b5  { display:inline-block; animation: wbpulse 3s ease-in-out infinite;   --ps:1.04; color:#ee9900; font-weight:bold; }
+.wind-b6  { display:inline-block; animation: wbpulse 2.2s ease-in-out infinite; --ps:1.06; color:#ee6600; font-weight:bold; }
+.wind-b7  { display:inline-block; animation: wbpulse 1.6s ease-in-out infinite; --ps:1.09; color:#dd4400; font-weight:bold; }
+.wind-b8  { display:inline-block; animation: wbpulse 1.2s ease-in-out infinite; --ps:1.12; color:#cc0000; font-weight:bold; }
+.wind-b9  { display:inline-block; animation: wbblink 1.8s ease-in-out infinite; --ps:1.10; --op:0.55; color:#aa0000; font-weight:bold; }
+.wind-b10 { display:inline-block; animation: wbblink 1.2s ease-in-out infinite; --ps:1.13; --op:0.35; color:#880000; font-weight:bold; }
+.wind-b11 { display:inline-block; animation: wbblink 0.8s ease-in-out infinite; --ps:1.16; --op:0.15; color:#660000; font-weight:bold; }
+.wind-b12 { display:inline-block; animation: wbblink 0.5s ease-in-out infinite; --ps:1.20; --op:0;    color:#440000; font-weight:bold; }
+@keyframes wbpulse  { 0%,100%{transform:scale(1)} 50%{transform:scale(var(--ps,1.04))} }
+@keyframes wbblink  { 0%,100%{transform:scale(var(--ps,1.06));opacity:1} 50%{transform:scale(1);opacity:var(--op,0.5)} }
+
+/* Ветер */
+.wind-arrow { color: #4a7ab5; font-size: 11px; }
+.wind-speed { font-weight: bold; }
+.wind-gust  { color: #888; }
+
+/* Влажность */
+.hum-normal { color: #333; }
+.hum-high   { color: #00a; font-weight: bold; }
+
+/* Туман */
+.wp_fog        { background: #e8e8d0 !important; }
+.wp_fog_danger { background: #e0c000 !important; color: #600; font-weight: bold; }
+
+/* Иконка тумана с числом */
+.fog-icon-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; cursor: default; }
+.fog-icon-wrap .wi { display: block; }
+.fog-pct { position: absolute; font-size: 8px; font-weight: bold; color: #fff; text-shadow: 0 0 2px #000; line-height: 1; pointer-events: none; }
+
+/* CSS Tooltips */
+[data-tooltip] { position: relative; cursor: default; }
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.82);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  padding: 4px 8px;
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 999;
+}
+[data-tooltip]:hover::after { opacity: 1; }
+.precip-val { display: block; font-size: 10px; color: #555; }
+.fog-val { color: #888; font-size: 11px; }
+
+/* Иконки в ячейках */
+.icon-cell { padding: 2px; overflow: visible; }
+.precip-val { display: block; font-size: 10px; color: #555; }
+.fog-val { color: #888; font-size: 11px; }
+
+/* Осадки + молния */
+.precip-wrap {
+  display: inline-block;
+  position: relative;
+  width: 35px;
+  height: 25px;
+  vertical-align: middle;
+}
+
+/* Только молния (местами гроза) */
+.precip-wrap.has-thunder { display: inline-block; width: 12px; }
+
+/* Ширина контейнера = left молнии + 12px */
+.precip-wrap.has-thunder.precip-rain_light    { width: 35px; } /* 23+12 */
+.precip-wrap.has-thunder.precip-rain_moderate { width: 40px; } /* 28+12 */
+.precip-wrap.has-thunder.precip-rain_heavy    { width: 45px; } /* 33+12 */
+
+.precip-wrap.has-thunder.precip-snow_light    { width: 36px; } /* 24+12 */
+.precip-wrap.has-thunder.precip-snow_moderate { width: 44px; } /* 32+12 */
+.precip-wrap.has-thunder.precip-snow_heavy    { width: 48px; } /* 36+12 */
+
+.precip-wrap.has-thunder.precip-sleet_light    { width: 36px; } /* 24+12 */
+.precip-wrap.has-thunder.precip-sleet_moderate { width: 41px; } /* 29+12 */
+.precip-wrap.has-thunder.precip-sleet_heavy    { width: 46px; } /* 34+12 */
+
+.precip-wrap .precip-icon {
+  display: block;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+/* Без молнии — капля по центру */
+.precip-wrap:not(.has-thunder) .precip-icon {
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+/* С молнией — капля у левого края */
+.precip-wrap.has-thunder .precip-icon { left: 0; }
+
+/* Молния */
+.lightning-icon {
+  display: block;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 20px;
+  cursor: default;
+  left: 0;
+}
+.lightning-icon img { width: 12px; height: 20px; display: block; }
+
+/* Компенсация пустого пространства слева в спрайте для центрирования */
+/* rain firstX: 12,8,3 → сдвиг влево на firstX/2 */
+.precip-wrap.has-thunder.precip-rain_light    { margin-left: -6px; }
+.precip-wrap.has-thunder.precip-rain_moderate { margin-left: -4px; }
+.precip-wrap.has-thunder.precip-rain_heavy    { margin-left: -2px; }
+
+/* snow firstX: 12,6,2 */
+.precip-wrap.has-thunder.precip-snow_light    { margin-left: -6px; }
+.precip-wrap.has-thunder.precip-snow_moderate { margin-left: -3px; }
+.precip-wrap.has-thunder.precip-snow_heavy    { margin-left: -1px; }
+
+/* sleet firstX: 13,7,3 */
+.precip-wrap.has-thunder.precip-sleet_light    { margin-left: -6px; }
+.precip-wrap.has-thunder.precip-sleet_moderate { margin-left: -3px; }
+.precip-wrap.has-thunder.precip-sleet_heavy    { margin-left: -2px; }
+
+/* snow_rain firstX: 12,7,2 → lastX: 20,27,33 */
+.precip-wrap.has-thunder.precip-snow_rain_light    { width: 36px; margin-left: -6px; } /* 24+12 */
+.precip-wrap.has-thunder.precip-snow_rain_moderate { width: 42px; margin-left: -3px; } /* 29+12+1 */
+.precip-wrap.has-thunder.precip-snow_rain_heavy    { width: 49px; margin-left: -1px; } /* 37+12 */
+
+.precip-wrap.has-thunder.precip-snow_rain_light .lightning-icon    { left: 24px; }
+.precip-wrap.has-thunder.precip-snow_rain_moderate .lightning-icon { left: 30px; }
+.precip-wrap.has-thunder.precip-snow_rain_heavy .lightning-icon    { left: 37px; }
+.precip-wrap.has-thunder.precip-rain_light .lightning-icon    { left: 23px; }
+.precip-wrap.has-thunder.precip-rain_moderate .lightning-icon { left: 28px; }
+.precip-wrap.has-thunder.precip-rain_heavy .lightning-icon    { left: 33px; }
+
+.precip-wrap.has-thunder.precip-snow_light .lightning-icon    { left: 24px; }
+.precip-wrap.has-thunder.precip-snow_moderate .lightning-icon { left: 32px; }
+.precip-wrap.has-thunder.precip-snow_heavy .lightning-icon    { left: 36px; }
+
+.precip-wrap.has-thunder.precip-sleet_light .lightning-icon    { left: 24px; }
+.precip-wrap.has-thunder.precip-sleet_moderate .lightning-icon { left: 29px; }
+.precip-wrap.has-thunder.precip-sleet_heavy .lightning-icon    { left: 34px; }
+
+/* Солнце и Луна */
+.sun-moon-cell { text-align: center; font-size: 11px; padding: 3px 4px; }
+.sun-time { display: inline-block; color: #c60; font-weight: bold; margin: 0 2px; }
+.moon-time { display: inline-block; color: #66a; margin: 0 2px; }
+.moon-phase-icon { display: block; margin: 3px auto 0; }
+.sun-moon-body { transition: none; }
+.sun-moon-body.hidden { display: none; }
+
+/* Кнопка свернуть — вне скролла */
+.toggle-sun-moon { background: #e4ecf4; text-align: center; cursor: pointer; padding: 4px 10px; font-size: 12px; color: #4a7ab5; border: 1px solid #c8d4e0; border-top: none; }
+.toggle-sun-moon:hover { background: #d0dce8; }
+
+/* Направление ветра — мелкий шрифт чтобы влезало */
+.row-wind-dir td { font-size: 10px; overflow: hidden; }
+
+/* Обобщённый прогноз */
+.forecast-summary {
+  max-width: 1100px;
+  margin: 8px auto;
+  background: linear-gradient(to bottom, #d8e4f0, #ffffff);
+  padding: 6px 10px;
+  font-size: 20px;
+  color: #000;
+  border-radius: 6px;
+  text-align: justify;
+  font-weight: bold
+}
+
+/* ГЕО-СТРАНИЦЫ (страны, регионы, города) */
+.geo-title { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 16px; }
+.geo-letter-block { margin-bottom: 12px; display: flex; align-items: flex-start; gap: 12px; }
+.geo-letter { font-size: 18px; font-weight: bold; color: #1a5cb5; min-width: 20px; padding-top: 2px; }
+.geo-list { display: flex; flex-wrap: wrap; gap: 4px 0; flex-direction: column; }
+.geo-item { color: #1a5cb5; text-decoration: none; font-size: 13px; padding: 1px 0; display: block; }
+.geo-item:hover { text-decoration: underline; }
+.geo-sub { color: #888; font-size: 12px; }
+
+/* ===== АРХИВ ПОГОДЫ ===== */
+.archive-controls { background: #f0f4f8; border: 1px solid #c0d0e0; padding: 8px 12px; margin-bottom: 4px; }
+.archive-form { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+
+/* Вкладки периодов для статистики */
+.period-tabs { 
+  display: flex; 
+  gap: 8px; 
+  background: #f0f4f8; 
+  border: 1px solid #c0d0e0; 
+  padding: 8px 12px; 
+  margin-bottom: 4px; 
+}
+.period-tabs a { 
+  padding: 5px 18px; 
+  font-size: 13px; 
+  color: #333; 
+  text-decoration: none; 
+  border: 1px solid #aaa; 
+  border-radius: 3px; 
+  background: #fff; 
+  cursor: pointer; 
+}
+.period-tabs a:hover { 
+  background: #e8f0f8; 
+}
+.period-tabs a.active { 
+  background: #1a5cb5; 
+  color: #fff; 
+  border-color: #1a5cb5; 
+}
+
+.archive-label { font-size: 13px; color: #444; white-space: nowrap; }
+.archive-date-input { border: 1px solid #aaa; border-radius: 3px; padding: 3px 6px; font-size: 13px; }
+.archive-radio { font-size: 13px; color: #333; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.archive-btn { background: #1a5cb5; color: #fff; border: none; border-radius: 3px; padding: 5px 18px; font-size: 13px; cursor: pointer; margin-left: auto; }
+.archive-btn:hover { background: #1448a0; }
+.archive-hint { font-size: 12px; color: #1a5cb5; font-style: italic; padding: 4px 0 6px; }
+
+.archive-wrap { overflow-x: auto; width: 100%; }
+.archiveTable { border-collapse: collapse; font-size: 11px; white-space: nowrap; background: #fff; width: 100%; }
+.archiveTable th, .archiveTable td { border: 1px solid #c0ccd8; padding: 3px 5px; text-align: center; vertical-align: middle; }
+
+/* Заголовки */
+.arch-th { background: #d8e4f0; font-size: 11px; font-weight: bold; cursor: default; min-width: 30px; }
+.arch-th-date { min-width: 100px; background: #c8d8ec; }
+.archiveTable thead tr:first-child th { border-top: 2px solid #7090b0; }
+.archiveTable thead tr:last-child th  { border-bottom: 2px solid #7090b0; }
+
+/* Граница между заголовками и данными для всех ячеек в последней строке заголовка */
+.archiveTable thead tr:last-child th { border-bottom: 2px solid #7090b0 !important; }
+/* Граница для ячеек с rowspan в первой строке заголовка */
+.archiveTable thead tr:first-child th[rowspan] { border-bottom: 2px solid #7090b0 !important; }
+
+/* Строки */
+.arch-even { background: #fff; }
+.arch-odd  { background: #f4f8fc; }
+
+/* Ячейка даты — градиент сверху серый, снизу белый */
+.arch-td-date {
+  background: linear-gradient(to bottom, #d0dce8, #ffffff) !important;
+  text-align: center;
+  padding: 3px 2px;
+  width: 5px;
+  min-width: 5px;
+  max-width: 5px;
+  vertical-align: middle;
+}
+.arch-day-start { border-top: 2px solid #7090b0 !important; }
+.arch-row.arch-day-border td { border-top: 2px solid #7090b0; }
+.arch-date-label { 
+  font-weight: bold; 
+  font-size: 11px; 
+  color: #333; 
+  line-height: 1.4;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+.arch-time { font-size: 12px; color: #555; }
+
+/* Ячейка времени */
+.arch-td-time {
+  width: 10px;
+  min-width: 10px;
+  max-width: 10px;
+  text-align: center;
+  padding: 2px;
+}
+
+/* Широкие ячейки для текстовых описаний */
+.arch-td-wide { min-width: 80px; max-width: 120px; white-space: normal; font-size: 10px; text-align: left; }
+.arch-td { min-width: 28px; height: 28px; }
+.archiveTable tr { height: 28px; }
+
+/* Колонки WW, W1, W2 - уменьшенная ширина */
+.arch-ww-cell { 
+  max-width: 100px; 
+  min-width: 60px;
+  white-space: normal; 
+  font-size: 10px; 
+  text-align: left;
+  padding: 2px 4px;
+}
+.arch-w-cell { 
+  max-width: 80px; 
+  min-width: 50px;
+  white-space: normal; 
+  font-size: 10px; 
+  text-align: left;
+  padding: 2px 4px;
+}

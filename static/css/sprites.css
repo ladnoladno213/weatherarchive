@@ -1,0 +1,103 @@
+.wi {
+  display: inline-block;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+}
+
+/* ===================== ОБЛАЧНОСТЬ (ДЕНЬ) ===================== */
+.wi-cloud-partly-day       { background-image: url('/resources/sprites/sprite_w.png'); background-position: -127px -100px; width: 28px; height: 25px; }
+.wi-cloud-mostly-day       { background-image: url('/resources/sprites/sprite_w.png'); background-position: -156px -100px; width: 28px; height: 25px; }
+.wi-cloud-few-day          { background-image: url('/resources/sprites/sprite_w.png'); background-position: -187px -100px; width: 28px; height: 25px; }
+.wi-clear-day              { background-image: url('/resources/sprites/sprite_w.png'); background-position: -216px -101px; width: 28px; height: 25px; }
+.wi-cloud-light-day        { background-image: url('/resources/sprites/sprite_w.png'); background-position: -247px -101px; width: 28px; height: 25px; }
+.wi-cloudy-day             { background-image: url('/resources/sprites/sprite_w.png'); background-position: -276px -100px; width: 28px; height: 25px; }
+.wi-cloud-heavy-day        { background-image: url('/resources/sprites/sprite_w.png'); background-position: -362px -100px; width: 28px; height: 25px; }
+.wi-overcast-day           { background-image: url('/resources/sprites/sprite_w.png'); background-position: -117px -135px; width: 28px; height: 25px; }
+
+/* ===================== ОБЛАЧНОСТЬ (НОЧЬ) ===================== */
+.wi-clear-night            { background-image: url('/resources/sprites/sprite_w.png'); background-position: -207px -135px; width: 28px; height: 25px; }
+.wi-cloud-light-night      { background-image: url('/resources/sprites/sprite_w.png'); background-position: -179px -135px; width: 28px; height: 25px; }
+.wi-cloud-few-night        { background-image: url('/resources/sprites/sprite_w.png'); background-position: -238px -134px; width: 28px; height: 25px; }
+.wi-cloudy-night           { background-image: url('/resources/sprites/sprite_w.png'); background-position: -267px -134px; width: 28px; height: 25px; }
+.wi-cloud-mostly-night     { background-image: url('/resources/sprites/sprite_w.png'); background-position: -296px -134px; width: 28px; height: 25px; }
+.wi-cloud-partly-night     { background-image: url('/resources/sprites/sprite_w.png'); background-position: -307px -100px; width: 28px; height: 25px; }
+.wi-cloud-heavy-night      { background-image: url('/resources/sprites/sprite_w.png'); background-position: -146px -134px; width: 28px; height: 25px; }
+.wi-overcast-night         { background-image: url('/resources/sprites/sprite_w.png'); background-position: -70px  -136px; width: 28px; height: 25px; }
+
+/* ===================== ФАЗЫ ЛУНЫ ===================== */
+.wi-moon-waxing-crescent   { background-image: url('/resources/sprites/sprite_w.png'); background-position: -0px   -102px; width: 25px; height: 25px; }
+.wi-moon-new               { background-image: url('/resources/sprites/sprite_w.png'); background-position: -25px  -102px; width: 25px; height: 25px; }
+.wi-moon-waning-gibbous    { background-image: url('/resources/sprites/sprite_w.png'); background-position: -50px  -102px; width: 25px; height: 25px; }
+.wi-moon-waning-crescent   { background-image: url('/resources/sprites/sprite_w.png'); background-position: -75px  -102px; width: 25px; height: 25px; }
+.wi-moon-last-quarter      { background-image: url('/resources/sprites/sprite_w.png'); background-position: -100px -102px; width: 25px; height: 25px; }
+.wi-moon-first-quarter     { background-image: url('/resources/sprites/sprite_w.png'); background-position: -305px -68px;  width: 25px; height: 25px; }
+.wi-moon-waxing-gibbous    { background-image: url('/resources/sprites/sprite_w.png'); background-position: -330px -68px;  width: 25px; height: 25px; }
+.wi-moon-full              { background-image: url('/resources/sprites/sprite_w.png'); background-position: -381px -68px;  width: 25px; height: 25px; }
+
+/* ===================== ОСАДКИ — ДОЖДЬ ===================== */
+.wi-rain-light             { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -1px  -26px; width: 35px; height: 18px; }
+.wi-rain-moderate          { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -34px -26px; width: 35px; height: 18px; }
+.wi-rain-heavy             { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -68px -26px; width: 35px; height: 18px; }
+
+/* ===================== ОСАДКИ — ЛЕДЯНОЙ ДОЖДЬ ===================== */
+.wi-freezing-rain-light    { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -2px  -0px;  width: 35px; height: 18px; }
+.wi-freezing-rain-moderate { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -34px -0px;  width: 35px; height: 18px; }
+.wi-freezing-rain-heavy    { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -68px -0px;  width: 35px; height: 18px; }
+
+/* ===================== ОСАДКИ — ДОЖДЬ СО СНЕГОМ ===================== */
+.wi-sleet-light            { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -0px  -55px; width: 35px; height: 25px; }
+.wi-sleet-moderate         { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -35px -55px; width: 35px; height: 25px; }
+.wi-sleet-heavy            { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -68px -55px; width: 35px; height: 25px; }
+
+/* ===================== ОСАДКИ — СНЕГ ===================== */
+.wi-snow-light             { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -0px  -80px; width: 35px; height: 14px; }
+.wi-snow-moderate          { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -33px -80px; width: 35px; height: 14px; }
+.wi-snow-heavy             { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -67px -80px; width: 35px; height: 14px; }
+
+/* ===================== ОСАДКИ — СНЕГ С ДОЖДЁМ ===================== */
+.wi-snow-rain-light        { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -0px   -107px; width: 35px; height: 25px; }
+.wi-snow-rain-moderate     { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -34px  -107px; width: 35px; height: 25px; }
+.wi-snow-rain-heavy        { background-image: url('/resources/sprites/sprite-rain-snow.png'); background-position: -67px  -107px; width: 35px; height: 25px; }
+
+/* ===================== ТУМАН ===================== */
+.wi-haze                   { background-image: url('/resources/sprites/sprite_wp_fr_v2.png'); background-position: -1px -3px;  width: 27px; height: 21px; }
+.wi-fog-heavy              { background-image: url('/resources/sprites/sprite_wp_fr_v2.png'); background-position: -1px -22px; width: 27px; height: 21px; }
+.wi-fog                    { background-image: url('/resources/sprites/sprite_wp_fr_v2.png'); background-position: -1px -43px; width: 27px; height: 21px; }
+
+/* ===================== UI — ПРЕДУПРЕЖДЕНИЕ ===================== */
+.wi-warning                { background-image: url('/resources/sprites/sprite_w.png'); background-position: -368px -136px; width: 16px; height: 16px; }
+
+/* ===================== UI — КНОПКИ ДЕЙСТВИЙ ===================== */
+.wi-btn-forecast           { background-image: url('/resources/sprites/sprite_w.png'); background-position: -325px -133px; width: 25px; height: 25px; }
+.wi-btn-map                { background-image: url('/resources/sprites/sprite_w.png'); background-position: -333px -103px; width: 12px; height: 19px; }
+.wi-icon-time              { background-image: url('/resources/sprites/sprite_w.png'); background-position: -51px  -137px; width: 19px; height: 21px; }
+.wi-airport                { background-image: url('/resources/sprites/sprite_w.png'); background-position: -98px  -137px; width: 19px; height: 19px; }
+
+/* ===================== UI — ШАПКА (sprite_h) ===================== */
+/* Иконка поиска */
+.wi-btn-search             { background-image: url('/resources/sprites/sprite_h.png'); background-position: 0px   -70px;  width: 35px; height: 34px; }
+
+/* Кнопки — неактивное состояние */
+.wi-btn-settings           { background-image: url('/resources/sprites/sprite_h.png'); background-position: 0px   -35px;  width: 115px; height: 35px; }
+.wi-btn-lang               { background-image: url('/resources/sprites/sprite_h.png'); background-position: -230px -35px; width: 115px; height: 35px; }
+.wi-btn-mobile             { background-image: url('/resources/sprites/sprite_h.png'); background-position: -115px -35px; width: 115px; height: 35px; }
+
+/* Кнопки — активное состояние */
+.wi-btn-settings-active    { background-image: url('/resources/sprites/sprite_h.png'); background-position: -230px 0px;   width: 115px; height: 35px; }
+.wi-btn-lang-active        { background-image: url('/resources/sprites/sprite_h.png'); background-position: -115px 0px;   width: 115px; height: 35px; }
+.wi-btn-mobile-active      { background-image: url('/resources/sprites/sprite_h.png'); background-position: 0px    0px;   width: 115px; height: 35px; }
+
+/* ===================== UI — ВКЛАДКИ (sprite-tab) ===================== */
+.tab-corner-left-inactive  { background-image: url('/resources/sprites/sprite-tab.png'); background-position: 0px  0px;    width: 20px; height: 35px; flex-shrink: 0; display: inline-block; }
+.tab-corner-right-inactive { background-image: url('/resources/sprites/sprite-tab.png'); background-position: -6px -41px;  width: 20px; height: 35px; flex-shrink: 0; display: inline-block; }
+.tab-corner-left-active    { background-image: url('/resources/sprites/sprite-tab.png'); background-position: 0px  -82px;  width: 20px; height: 35px; flex-shrink: 0; display: inline-block; }
+.tab-corner-right-active   { background-image: url('/resources/sprites/sprite-tab.png'); background-position: -6px -123px; width: 20px; height: 35px; flex-shrink: 0; display: inline-block; }
+.tab-bg-inactive {
+  background: linear-gradient(to bottom, #00A2DD 0%, #004B99 100%);
+  height: 35px;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 5px;
+}
+.tab-bg-active { background-color: #fff; height: 35px; display: flex; align-items: center; flex: 1; min-width: 5px; }

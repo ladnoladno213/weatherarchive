@@ -1,0 +1,175 @@
+<%- include('_header', { searchAction: '/archivetest' }) %>
+<div class="breadcrumb-inner" style="padding:5px 10px;max-width:1100px;margin:0 auto;font-size:12px;">
+  <a href="/" class="bc-link">Все страны</a>
+  <span class="bc-sep">›</span>
+  <a href="/<%= countryNameEn %>" class="bc-link"><%= country %></a>
+  <% if (admin1) { %><span class="bc-sep">›</span><span class="bc-link"><%= admin1 %></span><% } %>
+  <span class="bc-sep">›</span>
+  <span class="bc-current"><%= city %></span>
+</div>
+
+<% if (!isAirport && geonameId) { %>
+<div class="forecast-link-wrapper">
+  <a href="/weather?id=<%= geonameId %>" class="forecast-link">
+    <span class="forecast-icon"></span>
+    <span class="forecast-arrow"></span>
+    <span class="forecast-text">Прогноз погоды</span>
+  </a>
+</div>
+<% } else if (isAirport && nearestCity) { %>
+<div class="forecast-link-wrapper">
+  <a href="/weather?id=<%= nearestCity.id %>" class="forecast-link">
+    <span class="forecast-icon"></span>
+    <span class="forecast-arrow"></span>
+    <span class="forecast-text">Прогноз погоды (<%= nearestCity.name %>)</span>
+  </a>
+</div>
+<% } %>
+
+<div class="rp5-wrapper rp5-wrapper-archive">
+
+  <!-- ВКЛАДКИ -->
+  <div class="tabs-row" id="archiveTabsRow">
+    <a href="/archivetest?id=<%= geonameId %>" class="tab-btn tab-active" id="atab-archive">
+      <span class="tab-corner-left-active"></span>
+      <span class="tab-bg-active tab-label">Архив погоды (Meteostat)</span>
+      <span class="tab-corner-right-active"></span>
+    </a>
+  </div>
+
+  <!-- ПАНЕЛЬ ВЫБОРКИ -->
+  <div class="archive-controls">
+    <form method="get" action="/archivetest" class="archive-form">
+      <input type="hidden" name="id" value="<%= geonameId %>"/>
+      <label class="archive-label">Конечная дата периода:</label>
+      <input type="date" name="date" value="<%= endDate %>" max="<%= endDate %>" class="archive-date-input"/>
+      <span class="archive-label" style="margin-left:24px">Период выборки:</span>
+      <label class="archive-radio"><input type="radio" name="period" value="1"  <%= period==1?'checked':'' %>/> 1 сутки</label>
+      <label class="archive-radio"><input type="radio" name="period" value="7"  <%= period==7?'checked':'' %>/> 7 суток</label>
+      <label class="archive-radio"><input type="radio" name="period" value="30" <%= period==30?'checked':'' %>/> 30 суток</label>
+      <button type="submit" class="archive-btn">Выбрать</button>
+    </form>
+  </div>
+
+  <!-- ПОДСКАЗКА -->
+  <div class="archive-hint">
+    Для получения пояснений наведите курсор мыши на соответствующий заголовок
+    <span style="float:right;color:#888;font-size:11px;">
+      Источник: <%= dataSource %>
+    </span>
+  </div>
+
+  <!-- ТАБЛИЦА АРХИВА -->
+  <div class="archive-wrap">
+    <table class="archiveTable">
+      <thead>
+        <tr class="arch-head-top">
+          <th colspan="2" class="arch-th arch-th-datetime" data-tooltip="Дата и местное время наблюдения">Дата / Местное время</th>
+          <th class="arch-th" data-tooltip="Температура воздуха в срок наблюдения на высоте 2 м (°C)">T</th>
+          <th class="arch-th" data-tooltip="Атмосферное давление на уровне станции (мм рт. ст.)">Po</th>
+          <th class="arch-th" data-tooltip="Относительная влажность воздуха (%)">U</th>
+          <th class="arch-th" data-tooltip="Направление ветра, осреднённое за 10 мин перед сроком наблюдения">DD</th>
+          <th class="arch-th" data-tooltip="Скорость ветра, осреднённая за 10 мин перед сроком наблюдения (м/с)">Ff</th>
+          <th class="arch-th" data-tooltip="Максимальный порыв ветра за 10 мин перед сроком наблюдения (м/с)">ff10</th>
+          <th class="arch-th" data-tooltip="Максимальный порыв ветра за период между сроками наблюдения (м/с)">ff3</th>
+          <th class="arch-th" data-tooltip="Общая облачность в срок наблюдения (%)">N</th>
+          <th class="arch-th" data-tooltip="Текущая погода, сообщаемая с метеостанции">WW</th>
+          <th class="arch-th" data-tooltip="Прошедшая погода между сроками наблюдения 1">W1</th>
+          <th class="arch-th" data-tooltip="Прошедшая погода между сроками наблюдения 2">W2</th>
+          <th class="arch-th" data-tooltip="Минимальная температура воздуха за прошедший период (не более 12 ч) (°C)">Tn</th>
+          <th class="arch-th" data-tooltip="Максимальная температура воздуха за прошедший период (не более 12 ч) (°C)">Tx</th>
+          <th class="arch-th" data-tooltip="Горизонтальная дальность видимости (км)">VV</th>
+          <th class="arch-th" data-tooltip="Температура точки росы на высоте 2 м (°C)">Td</th>
+          <th class="arch-th" data-tooltip="Количество выпавших осадков (мм)">RRR</th>
+          <th class="arch-th" data-tooltip="Период времени, за который накоплено указанное количество осадков (ч)">tR</th>
+          <th class="arch-th" data-tooltip="Высота снежного покрова (см)">sss</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (!rows || !rows.length) { %>
+        <tr><td colspan="19" style="text-align:center;padding:20px;color:#888">Нет данных за выбранный период</td></tr>
+        <% } %>
+        <% let lastDate = null; %>
+        <% ;(rows||[]).forEach(function(row, ri) { %>
+          <% const isNewDay = row.date !== lastDate; %>
+          <% if (isNewDay) { lastDate = row.date; } %>
+          <tr class="arch-row <%= ri % 2 === 0 ? 'arch-even' : 'arch-odd' %><%= isNewDay ? ' arch-day-border' : '' %>">
+            <% if (isNewDay) { %>
+            <td class="arch-td-date arch-day-start" rowspan="<%= (rows||[]).filter(r => r.date === row.date).length %>">
+              <div class="arch-date-label"><%= row.dateLabel %></div>
+            </td>
+            <% } %>
+            <td class="arch-td arch-td-time"><%= row.time %></td>
+            <td class="arch-td"><span class="<%= tempClass(row.T) %>" data-tooltip="<%= tempTooltip(row.T) %>"><%= row.T != null ? (row.T > 0 ? '+' : '') + row.T : '' %></span></td>
+            <td class="arch-td"><span class="<%= pressClass(row.Pa) %>" data-tooltip="<%= pressTooltip(row.Pa) %>"><%= row.Pa != null ? row.Pa : '' %></span></td>
+            <td class="arch-td"><span class="<%= humClass(row.U) %>" data-tooltip="<%= humTooltip(row.U) %>"><%= row.U != null ? row.U : '' %></span></td>
+            <td class="arch-td"><%= row.windDir || '' %></td>
+            <td class="arch-td"><span class="<%= windBfClass(row.Ff) %>" data-tooltip="<%= windBfLabel(row.Ff) %>"><%= row.Ff != null ? row.Ff : '' %></span></td>
+            <td class="arch-td"><span class="<%= windBfClass(row.ff10) %>" data-tooltip="<%= windBfLabel(row.ff10) %> (порыв 10 мин)"><%= row.ff10 != null ? row.ff10 : '' %></span></td>
+            <td class="arch-td"><span class="<%= windBfClass(row.gust) %>" data-tooltip="<%= windBfLabel(row.gust) %> (порыв между сроками)"><%= row.gust != null ? row.gust : '' %></span></td>
+            <td class="arch-td"><%= row.N != null ? row.N : '' %></td>
+            <td class="arch-td arch-td-wide"><%= row.WW || '' %></td>
+            <td class="arch-td arch-td-wide"><%= row.W1 || '' %></td>
+            <td class="arch-td arch-td-wide"><%= row.W2 || '' %></td>
+            <td class="arch-td"><span class="<%= tempClass(row.Tn) %>"><%= row.Tn != null ? (row.Tn > 0 ? '+' : '') + row.Tn : '' %></span></td>
+            <td class="arch-td"><span class="<%= tempClass(row.Tx) %>"><%= row.Tx != null ? (row.Tx > 0 ? '+' : '') + row.Tx : '' %></span></td>
+            <td class="arch-td"><%= row.VV != null ? row.VV : '' %></td>
+            <td class="arch-td"><span class="<%= tempClass(row.Td) %>"><%= row.Td != null ? (row.Td > 0 ? '+' : '') + row.Td : '' %></span></td>
+            <td class="arch-td"><%= row.RRR != null ? row.RRR : '' %></td>
+            <td class="arch-td"><%= row.tR != null ? row.tR : '' %></td>
+            <td class="arch-td"><%= row.sss != null ? row.sss : '' %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+document.querySelectorAll('.hbtn-wrap').forEach(wrap => {
+  const btn = wrap.querySelector('.hbtn');
+  const dd  = wrap.querySelector('.hbtn-dropdown');
+  if (!btn || !dd) return;
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    document.querySelectorAll('.hbtn-dropdown.open').forEach(d => { if(d !== dd) d.classList.remove('open'); });
+    dd.classList.toggle('open');
+  });
+});
+document.addEventListener('click', e => {
+  document.querySelectorAll('.hbtn-dropdown.open').forEach(d => {
+    if (!d.contains(e.target)) d.classList.remove('open');
+  });
+});
+const input = document.getElementById('cityInput');
+const suggestions = document.getElementById('searchSuggestions');
+let timer;
+input.addEventListener('input', function() {
+  clearTimeout(timer);
+  const q = this.value.trim();
+  if (q.length < 2) { suggestions.innerHTML = ''; suggestions.style.display = 'none'; return; }
+  timer = setTimeout(async () => {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if (!data.length) { suggestions.style.display = 'none'; return; }
+    suggestions.innerHTML = data.map(c =>
+      `<div class="suggestion-item" data-name="${c.name}" data-id="${c.id || ''}">` + c.name + (c.region ? ', ' + c.region : '') + ', ' + c.country + '</div>'
+    ).join('');
+    suggestions.style.display = 'block';
+    suggestions.querySelectorAll('.suggestion-item').forEach(el => {
+      el.addEventListener('click', () => {
+        suggestions.style.display = 'none';
+        const id = el.dataset.id;
+        if (id) { window.location.href = '/weather?id=' + id; }
+        else { input.value = el.dataset.name; document.getElementById('searchForm').submit(); }
+      });
+    });
+  }, 300);
+});
+document.addEventListener('click', e => {
+  if (!suggestions.contains(e.target) && e.target !== input) suggestions.style.display = 'none';
+});
+</script>
+</body>
+</html>

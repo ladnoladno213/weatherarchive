@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="/static/css/rp5.css"/>
+  <link rel="stylesheet" href="/static/css/sprites.css"/>
+  <title><%= title %></title>
+</head>
+<body>
+<div class="header-bg">
+  <div class="header-topbar">
+    <div class="header-topbar-inner">
+      <nav class="topbar-nav">
+        <a href="/">Главная</a>
+        <a href="/about">О нас</a>
+        <a href="/faq">Частые вопросы</a>
+        <a href="/contacts">Контакты</a>
+      </nav>
+    </div>
+  </div>
+  <div class="header-main">
+    <div class="header-main-inner">
+      <div class="header-logo">
+        <a href="/"><img src="/resources/logoPrint.png" alt="logo" class="logo-img"/></a>
+      </div>
+      <div class="header-center">
+        <div class="header-countries">
+          <span class="countries-label">Страны:</span>
+          <a href="/weather?id=524901" class="country-link">Россия</a>
+          <a href="/weather?id=2643743" class="country-link">Великобритания</a>
+          <a href="/weather?id=2950159" class="country-link">Германия</a>
+          <a href="/weather?id=2988507" class="country-link">Франция</a>
+          <a href="/weather?id=1816670" class="country-link">Китай</a>
+          <a href="/" class="country-link country-all">Все страны »</a>
+        </div>
+        <form action="<%= locals.searchAction || '/' %>" method="get" class="search-form" id="searchForm">
+          <input type="text" name="city" id="cityInput" value="" placeholder="Поиск города..." class="search-input" autocomplete="off"/>
+          <button type="submit" class="search-btn"><span class="wi wi-btn-search"></span></button>
+          <div id="searchSuggestions" class="search-suggestions"></div>
+        </form>
+      </div>
+      <div class="header-btns">
+        <div class="hbtn-wrap" id="langWrap">
+          <button class="hbtn hbtn-sprite wi wi-btn-lang" id="langBtn" title="Язык"><span class="hbtn-label">Язык</span></button>
+          <div class="hbtn-dropdown" id="langDropdown">
+            <div class="hbtn-dropdown-title">Язык</div>
+            <a href="?lang=ru" class="hbtn-option">🇷🇺 Русский</a>
+            <a href="?lang=en" class="hbtn-option">🇬🇧 English</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

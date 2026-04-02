@@ -1,0 +1,52 @@
+name: Download RP5 Weather Data
+
+on:
+  # Запуск по расписанию (каждый месяц 1-го числа в 3:00 UTC)
+  schedule:
+    - cron: '0 3 1 * *'
+  
+  # Ручной запуск через GitHub UI
+  workflow_dispatch:
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install selenium requests
+      
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+      
+      - name: Install ChromeDriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/LATEST_RELEASE_${CHROME_VERSION}
+          CHROMEDRIVER_VERSION=$(cat LATEST_RELEASE_${CHROME_VERSION})
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+      
+      - name: Download RP5 data
+        run: |
+          python rp5-github-action.py
+      
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add data/rp5-csv/*.csv
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update RP5 weather data" && git push)

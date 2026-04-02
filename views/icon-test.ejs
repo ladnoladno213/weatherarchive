@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <title>Тест иконок осадков</title>
+  <link rel="stylesheet" href="/static/css/rp5.css"/>
+  <link rel="stylesheet" href="/static/css/sprites.css"/>
+  <style>
+    body { background: #e8edf2; font-family: Arial, sans-serif; padding: 20px; }
+    h2 { margin: 20px 0 8px; color: #333; font-size: 15px; }
+    table { border-collapse: collapse; background: #fff; }
+    td { border: 1px solid #c8d4e0; width: 60px; height: 40px; text-align: center; vertical-align: middle; }
+    td.label { width: 200px; text-align: left; padding: 0 8px; font-size: 12px; color: #555; background: #e4ecf4; }
+    .section { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+
+<h1 style="font-size:18px;margin-bottom:20px">Тест иконок осадков</h1>
+
+<% 
+const types = [
+  { label: 'Слабый дождь',                   precip: 'rain_light',        mm: 1 },
+  { label: 'Умеренный дождь',                precip: 'rain_moderate',     mm: 5 },
+  { label: 'Сильный дождь',                  precip: 'rain_heavy',        mm: 15 },
+  { label: 'Слабый снег',                    precip: 'snow_light',        mm: 0.5 },
+  { label: 'Умеренный снег',                 precip: 'snow_moderate',     mm: 3 },
+  { label: 'Сильный снег',                   precip: 'snow_heavy',        mm: 8 },
+  { label: 'Слабый дождь со снегом',         precip: 'sleet_light',       mm: 1 },
+  { label: 'Умеренный дождь со снегом',      precip: 'sleet_moderate',    mm: 5 },
+  { label: 'Сильный дождь со снегом',        precip: 'sleet_heavy',       mm: 10 },
+  { label: 'Слабый снег с дождём',           precip: 'snow_rain_light',    mm: 1 },
+  { label: 'Умеренный снег с дождём',        precip: 'snow_rain_moderate', mm: 5 },
+  { label: 'Сильный снег с дождём',          precip: 'snow_rain_heavy',    mm: 10 },
+  { label: 'Слабый переохл. дождь',          precip: 'freezing_light',    mm: 1,  thunder: false },
+  { label: 'Умеренный переохл. дождь',       precip: 'freezing_moderate', mm: 5,  thunder: false },
+  { label: 'Сильный переохл. дождь',         precip: 'freezing_heavy',    mm: 10, thunder: false },
+];
+%>
+
+<table>
+  <thead>
+    <tr>
+      <td class="label"><b>Тип осадков</b></td>
+      <td style="background:#4a7ab5;color:#fff;font-size:11px">Без грозы</td>
+      <td style="background:#4a7ab5;color:#fff;font-size:11px">С грозой</td>
+    </tr>
+  </thead>
+  <tbody>
+    <% types.forEach(function(t) { %>
+    <tr>
+      <td class="label"><%= t.label %></td>
+      <td class="cell-d"><%- precipIcon(t.precip, t.mm, false) %></td>
+      <td class="cell-d"><%- precipIcon(t.precip, t.mm, t.thunder !== false) %></td>
+    </tr>
+    <% }); %>
+  </tbody>
+</table>
+
+<h2>Только гроза (без осадков)</h2>
+<table>
+  <tr>
+    <td class="label">Местами гроза</td>
+    <td class="cell-d" style="width:60px;height:40px"><%- precipIcon(null, null, true) %></td>
+  </tr>
+</table>
+
+<h2>Иконки облачности (день)</h2>
+<table>
+  <tr>
+    <% for(let i=0; i<=7; i++) { %>
+    <td class="cell-d" style="height:40px"><%- cloudIcon(i, true) %></td>
+    <% } %>
+  </tr>
+</table>
+
+<h2>Иконки облачности (ночь)</h2>
+<table>
+  <tr>
+    <% for(let i=0; i<=7; i++) { %>
+    <td class="cell-n" style="height:40px"><%- cloudIcon(i, false) %></td>
+    <% } %>
+  </tr>
+</table>
+
+<h2>Туман</h2>
+<table>
+  <tr>
+    <td class="label">Дымка (видимость 5000м)</td>
+    <td class="cell-d" style="height:40px"><%- fogIcon({visibility:5000, pct:50}) %></td>
+  </tr>
+  <tr>
+    <td class="label">Слабый туман (700м)</td>
+    <td class="cell-d" style="height:40px"><%- fogIcon({visibility:700, pct:70}) %></td>
+  </tr>
+  <tr>
+    <td class="label">Умеренный туман (350м)</td>
+    <td class="cell-d" style="height:40px"><%- fogIcon({visibility:350, pct:85}) %></td>
+  </tr>
+  <tr>
+    <td class="label">Сильный туман (100м)</td>
+    <td class="cell-d" style="height:40px"><%- fogIcon({visibility:100, pct:95}) %></td>
+  </tr>
+  <tr>
+    <td class="label">Очень сильный туман (30м)</td>
+    <td class="cell-d" style="height:40px"><%- fogIcon({visibility:30, pct:99}) %></td>
+  </tr>
+</table>
+
+</body>
+</html>

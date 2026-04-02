@@ -1,0 +1,66 @@
+name: RP5 Frequent Updates
+
+on:
+  # Запуск каждые 3 часа (максимально близко к вашему расписанию)
+  schedule:
+    # 00:00 Екатеринбург = 19:00 UTC (предыдущий день)
+    - cron: '0 19 * * *'
+    # 03:00 Екатеринбург = 22:00 UTC (предыдущий день)
+    - cron: '0 22 * * *'
+    # 06:00 Екатеринбург = 01:00 UTC
+    - cron: '0 1 * * *'
+    # 09:00 Екатеринбург = 04:00 UTC
+    - cron: '0 4 * * *'
+    # 12:00 Екатеринбург = 07:00 UTC
+    - cron: '0 7 * * *'
+    # 15:00 Екатеринбург = 10:00 UTC
+    - cron: '0 10 * * *'
+    # 18:00 Екатеринбург = 13:00 UTC
+    - cron: '0 13 * * *'
+    # 21:00 Екатеринбург = 16:00 UTC
+    - cron: '0 16 * * *'
+  
+  # Ручной запуск
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 6 часов максимум
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install selenium requests
+      
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+      
+      - name: Install ChromeDriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/LATEST_RELEASE_${CHROME_VERSION}
+          DRIVER_VERSION=$(cat LATEST_RELEASE_${CHROME_VERSION})
+          wget -q https://storage.googleapis.com/chrome-for-testing-public/${DRIVER_VERSION}/linux64/chromedriver-linux64.zip
+          unzip -q chromedriver-linux64.zip
+          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+      
+      - name: Download RP5 data
+        run: python rp5-realtime-updater.py
+      
+      - name: Commit and push
+        run: |
+          git config user.name 'GitHub Action'
+          git config user.email 'action@github.com'
+          git add data/rp5-realtime/*.csv
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update RP5 data $(date '+%Y-%m-%d %H:%M')" && git push)

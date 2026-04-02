@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Демо: эффекты ветра</title>
+  <link rel="stylesheet" href="/static/css/rp5.css"/>
+  <style>
+    body { background: #e8edf2; font-family: Arial, sans-serif; font-size: 13px; }
+    .demo-wrap { max-width: 900px; margin: 20px auto; padding: 0 10px; }
+    h1 { font-size: 18px; margin-bottom: 16px; color: #333; }
+
+    .wind-table { border-collapse: collapse; width: 100%; background: #fff; }
+    .wind-table th { background: #d0dce8; padding: 6px 10px; text-align: left; font-size: 12px; border-bottom: 2px solid #a0b4c8; }
+    .wind-table td { padding: 6px 10px; border-bottom: 1px solid #e0e8f0; vertical-align: middle; }
+    .wind-table tr:hover td { background: #f4f8fc; }
+
+    /* Шкала Бофорта — цвета */
+    .bf-0  { color: #888; }
+    .bf-1  { color: #5a9; }
+    .bf-2  { color: #4a9; }
+    .bf-3  { color: #3a8; }
+    .bf-4  { color: #2a7; font-weight: bold; }
+    .bf-5  { color: #e90; font-weight: bold; }
+    .bf-6  { color: #e60; font-weight: bold; }
+    .bf-7  { color: #d40; font-weight: bold; }
+    .bf-8  { color: #c00; font-weight: bold; }
+    .bf-9  { color: #a00; font-weight: bold; }
+    .bf-10 { color: #800; font-weight: bold; }
+    .bf-11 { color: #600; font-weight: bold; }
+    .bf-12 { color: #400; font-weight: bold; }
+
+    /* Эффекты */
+
+    /* Градация эффектов по баллам Бофорта */
+    /* 4: едва заметная пульсация */
+    .wind-b4  { display:inline-block; animation: pulse 4s ease-in-out infinite; }
+    /* 5 */
+    .wind-b5  { display:inline-block; animation: pulse 3s ease-in-out infinite; }
+    /* 6 */
+    .wind-b6  { display:inline-block; animation: pulse 2.2s ease-in-out infinite; }
+    /* 7 */
+    .wind-b7  { display:inline-block; animation: pulse 1.6s ease-in-out infinite; }
+    /* 8 */
+    .wind-b8  { display:inline-block; animation: pulse 1.2s ease-in-out infinite; }
+    /* 9: начинается мигание */
+    .wind-b9  { display:inline-block; animation: blink 1.8s ease-in-out infinite; }
+    /* 10 */
+    .wind-b10 { display:inline-block; animation: blink 1.2s ease-in-out infinite; }
+    /* 11 */
+    .wind-b11 { display:inline-block; animation: blink 0.8s ease-in-out infinite; }
+    /* 12 */
+    .wind-b12 { display:inline-block; animation: blink 0.5s ease-in-out infinite; }
+
+    @keyframes pulse {
+      0%,100% { transform: scale(1);    opacity: 1; }
+      50%      { transform: scale(var(--ps, 1.04)); opacity: 1; }
+    }
+    @keyframes blink {
+      0%,100% { transform: scale(var(--ps, 1.06)); opacity: 1; }
+      50%      { transform: scale(1);               opacity: var(--op, 0.5); }
+    }
+
+    /* Переменные интенсивности для каждого балла */
+    .wind-b4  { --ps: 1.02; }
+    .wind-b5  { --ps: 1.04; }
+    .wind-b6  { --ps: 1.06; }
+    .wind-b7  { --ps: 1.09; }
+    .wind-b8  { --ps: 1.12; }
+    .wind-b9  { --ps: 1.10; --op: 0.55; }
+    .wind-b10 { --ps: 1.13; --op: 0.35; }
+    .wind-b11 { --ps: 1.16; --op: 0.15; }
+    .wind-b12 { --ps: 1.20; --op: 0;    }
+
+    .bar-wrap { width: 200px; height: 8px; background: #e0e8f0; border-radius: 4px; display: inline-block; vertical-align: middle; }
+    .bar-fill  { height: 100%; border-radius: 4px; transition: width 0.3s; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #fff; margin-left: 6px; }
+
+    .live-demo { margin-top: 24px; background: #fff; border: 1px solid #c0d0e0; border-radius: 4px; padding: 16px; }
+    .live-demo h2 { font-size: 14px; margin-bottom: 12px; color: #555; }
+    .live-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+    .live-label { width: 120px; font-size: 12px; color: #666; }
+    input[type=range] { width: 260px; }
+    .live-val { font-size: 20px; font-weight: bold; min-width: 60px; }
+    .live-desc { font-size: 12px; color: #888; }
+  </style>
+</head>
+<body>
+<div class="demo-wrap">
+  <h1>Демо: визуальные эффекты ветра (шкала Бофорта)</h1>
+
+  <table class="wind-table">
+    <thead>
+      <tr>
+        <th>Балл</th>
+        <th>Название</th>
+        <th>Скорость, м/с</th>
+        <th>Визуализация</th>
+        <th>Индикатор</th>
+      </tr>
+    </thead>
+    <tbody id="windTable"></tbody>
+  </table>
+
+  <div class="live-demo">
+    <h2>Интерактивный демо — введи скорость ветра</h2>
+    <div class="live-row">
+      <span class="live-label">Скорость (м/с):</span>
+      <input type="range" id="windSlider" min="0" max="40" step="0.5" value="0"/>
+      <span id="liveSpeed" class="live-val bf-0">0</span>
+      <span id="liveDesc" class="live-desc">штиль</span>
+    </div>
+    <div class="live-row">
+      <span class="live-label">Скорость:</span>
+      <span id="liveWindSpeed" class="wind-speed bf-0">0 м/с</span>
+    </div>
+    <div class="live-row">
+      <span class="live-label">Порывы:</span>
+      <span id="liveGust" class="wind-gust bf-0">0 м/с</span>
+    </div>
+  </div>
+
+  <!-- ДАВЛЕНИЕ -->
+  <h1 style="margin-top:32px">Давление (мм рт. ст.)</h1>
+  <table class="wind-table">
+    <thead>
+      <tr><th>Диапазон</th><th>Статус</th><th>Цвет текста</th><th>Пример</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ниже 740</td>
+        <td>Очень низкое давление</td>
+        <td style="color:#1a6fc4;font-weight:bold">Синий</td>
+        <td><span style="color:#1a6fc4;font-weight:bold" data-tooltip="Очень низкое давление">735 мм</span></td>
+      </tr>
+      <tr>
+        <td>740–748</td>
+        <td>Низкое давление</td>
+        <td style="color:#4a9fd4;font-weight:bold">Голубой</td>
+        <td><span style="color:#4a9fd4;font-weight:bold" data-tooltip="Низкое давление">745 мм</span></td>
+      </tr>
+      <tr>
+        <td>749–765</td>
+        <td>Нормальное давление</td>
+        <td style="color:#333">Чёрный</td>
+        <td><span style="color:#333" data-tooltip="Нормальное давление">757 мм</span></td>
+      </tr>
+      <tr>
+        <td>766–775</td>
+        <td>Высокое давление</td>
+        <td style="color:#e07820;font-weight:bold">Оранжевый</td>
+        <td><span style="color:#e07820;font-weight:bold" data-tooltip="Высокое давление">770 мм</span></td>
+      </tr>
+      <tr>
+        <td>выше 775</td>
+        <td>Очень высокое давление</td>
+        <td style="color:#c04000;font-weight:bold">Тёмно-оранжевый</td>
+        <td><span style="color:#c04000;font-weight:bold" data-tooltip="Очень высокое давление">780 мм</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="live-demo" style="margin-top:16px">
+    <h2>Интерактивный демо — давление</h2>
+    <div class="live-row">
+      <span class="live-label">Давление (мм):</span>
+      <input type="range" id="pressSlider" min="720" max="790" step="1" value="757"/>
+      <span id="livePressVal" style="font-size:18px;font-weight:bold;min-width:80px">757 мм</span>
+      <span id="livePressDesc" class="live-desc"></span>
+    </div>
+  </div>
+
+  <!-- ВЛАЖНОСТЬ -->
+  <h1 style="margin-top:32px">Влажность (%)</h1>
+  <table class="wind-table">
+    <thead>
+      <tr><th>Диапазон</th><th>Статус</th><th>Цвет текста</th><th>Пример</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0–20%</td>
+        <td>Очень низкая влажность</td>
+        <td style="color:#c04000;font-weight:bold">Тёмно-оранжевый</td>
+        <td><span style="color:#c04000;font-weight:bold" data-tooltip="Очень низкая влажность">15%</span></td>
+      </tr>
+      <tr>
+        <td>21–35%</td>
+        <td>Низкая влажность</td>
+        <td style="color:#e07820;font-weight:bold">Оранжевый</td>
+        <td><span style="color:#e07820;font-weight:bold" data-tooltip="Низкая влажность">28%</span></td>
+      </tr>
+      <tr>
+        <td>36–60%</td>
+        <td>Комфортная влажность</td>
+        <td style="color:#333">Чёрный</td>
+        <td><span style="color:#333" data-tooltip="Комфортная влажность">50%</span></td>
+      </tr>
+      <tr>
+        <td>61–80%</td>
+        <td>Повышенная влажность</td>
+        <td style="color:#4a9fd4;font-weight:bold">Голубой</td>
+        <td><span style="color:#4a9fd4;font-weight:bold" data-tooltip="Повышенная влажность">70%</span></td>
+      </tr>
+      <tr>
+        <td>81–90%</td>
+        <td>Высокая влажность</td>
+        <td style="color:#1a6fc4;font-weight:bold">Синий</td>
+        <td><span style="color:#1a6fc4;font-weight:bold" data-tooltip="Высокая влажность">85%</span></td>
+      </tr>
+      <tr>
+        <td>91–100%</td>
+        <td>Очень высокая влажность</td>
+        <td style="color:#0a3a8a;font-weight:bold">Тёмно-синий</td>
+        <td><span style="color:#0a3a8a;font-weight:bold" data-tooltip="Очень высокая влажность">95%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="live-demo" style="margin-top:16px">
+    <h2>Интерактивный демо — влажность</h2>
+    <div class="live-row">
+      <span class="live-label">Влажность (%):</span>
+      <input type="range" id="humSlider" min="0" max="100" step="1" value="50"/>
+      <span id="liveHumVal" style="font-size:18px;font-weight:bold;min-width:60px">50%</span>
+      <span id="liveHumDesc" class="live-desc"></span>
+    </div>
+  </div>
+  <h1 style="margin-top:32px">Шкала температур</h1>
+  <table class="wind-table" id="tempSection">
+    <thead>
+      <tr>
+        <th>Цвет</th>
+        <th>Диапазон</th>
+        <th>Описание</th>
+        <th>Индикатор</th>
+      </tr>
+    </thead>
+    <tbody id="tempTable"></tbody>
+  </table>
+
+  <div class="live-demo" style="margin-top:16px">
+    <h2>Интерактивный демо — температура</h2>
+    <div class="live-row">
+      <span class="live-label">Температура:</span>
+      <input type="range" id="tempSlider" min="-40" max="50" step="1" value="20"/>
+      <span id="liveTempVal" style="font-size:20px;font-weight:bold;min-width:80px">+20 °C</span>
+      <span id="liveTempDesc" class="live-desc"></span>
+    </div>
+    <div class="live-row">
+      <span class="live-label">В таблице:</span>
+      <span id="liveTempBox" style="display:inline-block;padding:4px 16px;border-radius:4px;font-weight:bold;font-size:16px;transition:background 0.3s,color 0.3s"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const BEAUFORT = [
+  { b:0,  name:'Штиль',          min:0,    max:0.2,  cls:'bf-0',  effect:'',          color:'#888888', badge:'#aaa' },
+  { b:1,  name:'Тихий',          min:0.3,  max:1.5,  cls:'bf-1',  effect:'',          color:'#55aa77', badge:'#5a9' },
+  { b:2,  name:'Лёгкий',         min:1.6,  max:3.3,  cls:'bf-2',  effect:'',          color:'#44aa88', badge:'#4a9' },
+  { b:3,  name:'Слабый',         min:3.4,  max:5.4,  cls:'bf-3',  effect:'',          color:'#33aa66', badge:'#3a8' },
+  { b:4,  name:'Умеренный',      min:5.5,  max:7.9,  cls:'bf-4',  effect:'wind-b4',   color:'#22aa55', badge:'#2a7' },
+  { b:5,  name:'Свежий',         min:8.0,  max:10.7, cls:'bf-5',  effect:'wind-b5',   color:'#ee9900', badge:'#e90' },
+  { b:6,  name:'Сильный',        min:10.8, max:13.8, cls:'bf-6',  effect:'wind-b6',   color:'#ee6600', badge:'#e60' },
+  { b:7,  name:'Крепкий',        min:13.9, max:17.1, cls:'bf-7',  effect:'wind-b7',   color:'#dd4400', badge:'#d40' },
+  { b:8,  name:'Очень крепкий',  min:17.2, max:20.7, cls:'bf-8',  effect:'wind-b8',   color:'#cc0000', badge:'#c00' },
+  { b:9,  name:'Шторм',          min:20.8, max:24.4, cls:'bf-9',  effect:'wind-b9',   color:'#aa0000', badge:'#a00' },
+  { b:10, name:'Сильный шторм',  min:24.5, max:28.4, cls:'bf-10', effect:'wind-b10',  color:'#880000', badge:'#800' },
+  { b:11, name:'Жестокий шторм', min:28.5, max:32.6, cls:'bf-11', effect:'wind-b11',  color:'#660000', badge:'#600' },
+  { b:12, name:'Ураган',         min:32.7, max:99,   cls:'bf-12', effect:'wind-b12',  color:'#440000', badge:'#400' },
+];
+
+function getBf(ms) {
+  return BEAUFORT.find(b => ms <= b.max) || BEAUFORT[12];
+}
+
+// Заполняем таблицу
+const tbody = document.getElementById('windTable');
+BEAUFORT.forEach(b => {
+  const maxStr = b.max >= 99 ? '32.7+' : `${b.min}–${b.max}`;
+  const exampleSpeed = b.min === 0 ? 0 : ((b.min + Math.min(b.max, 99)) / 2).toFixed(1);
+  const effectHtml = b.effect
+    ? `<span class="${b.cls} ${b.effect}" data-tooltip="${b.name} (${maxStr} м/с)">${exampleSpeed} м/с</span>`
+    : `<span class="${b.cls}" data-tooltip="${b.name} (${maxStr} м/с)">${exampleSpeed} м/с</span>`;
+  const pct = Math.min(b.max / 35 * 100, 100);
+  const barColor = b.badge;
+  tbody.innerHTML += `
+    <tr>
+      <td><strong>${b.b}</strong></td>
+      <td>${b.name}</td>
+      <td>${maxStr} м/с</td>
+      <td>${effectHtml}</td>
+      <td>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <span class="badge" style="background:${barColor}">${b.b}</span>
+      </td>
+    </tr>`;
+});
+
+// Интерактивный слайдер
+const slider = document.getElementById('windSlider');
+const liveSpeed = document.getElementById('liveSpeed');
+const liveDesc  = document.getElementById('liveDesc');
+const liveWind  = document.getElementById('liveWindSpeed');
+const liveGust  = document.getElementById('liveGust');
+
+function update() {
+  const ms = parseFloat(slider.value);
+  const gustMs = (ms * 1.4).toFixed(1);
+  const bf = getBf(ms);
+  const bfGust = getBf(parseFloat(gustMs));
+
+  liveSpeed.textContent = ms;
+  liveSpeed.className = `live-val ${bf.cls}`;
+  liveDesc.textContent = `${bf.name} (${bf.b} балл)`;
+
+  liveWind.className = `wind-speed ${bf.cls} ${bf.effect}`;
+  liveWind.textContent = `${ms} м/с`;
+  liveWind.setAttribute('data-tooltip', `${bf.name}`);
+
+  liveGust.className = `wind-gust ${bfGust.cls} ${bfGust.effect}`;
+  liveGust.textContent = `${gustMs} м/с`;
+  liveGust.setAttribute('data-tooltip', `${bfGust.name} (порыв)`);
+}
+
+slider.addEventListener('input', update);
+update();
+
+// ===== ТЕМПЕРАТУРА =====
+const TEMP_SCALE = [
+  { max:  50, min:  41, bg: '#5c1a1a', fg: '#fff', label: '+41…+50 °C', desc: 'Экстремальная жара' },
+  { max:  40, min:  31, bg: '#8b2020', fg: '#fff', label: '+31…+40 °C', desc: 'Сильная жара' },
+  { max:  30, min:  26, bg: '#c0392b', fg: '#fff', label: '+26…+30 °C', desc: 'Жара' },
+  { max:  25, min:  21, bg: '#e05c2a', fg: '#fff', label: '+21…+25 °C', desc: 'Тепло' },
+  { max:  20, min:  16, bg: '#e8922a', fg: '#fff', label: '+16…+20 °C', desc: 'Комфортно тепло' },
+  { max:  15, min:  11, bg: '#d4b800', fg: '#fff', label: '+11…+15 °C', desc: 'Умеренно тепло' },
+  { max:  10, min:   6, bg: '#7ab648', fg: '#fff', label:  '+6…+10 °C', desc: 'Прохладно' },
+  { max:   5, min:   1, bg: '#3aaa6a', fg: '#fff', label:   '+1…+5 °C', desc: 'Холодновато' },
+  { max:   0, min:   0, bg: '#5bc8c8', fg: '#fff', label:       '0 °C', desc: '0 градусов' },
+  { max:  -1, min:  -5, bg: '#5ba8d8', fg: '#fff', label:  '−1…−5 °C', desc: 'Лёгкий мороз' },
+  { max:  -6, min: -10, bg: '#4488c8', fg: '#fff', label: '−6…−10 °C', desc: 'Умеренный мороз' },
+  { max: -11, min: -15, bg: '#3366b8', fg: '#fff', label:'−11…−15 °C', desc: 'Мороз' },
+  { max: -16, min: -20, bg: '#5533aa', fg: '#fff', label:'−16…−20 °C', desc: 'Сильный мороз' },
+  { max: -21, min: -30, bg: '#7722aa', fg: '#fff', label:'−21…−30 °C', desc: 'Очень сильный мороз' },
+  { max: -31, min: -40, bg: '#aa22aa', fg: '#fff', label:'−31…−40 °C', desc: 'Экстремальный мороз' },
+  { max: -41, min: -99, bg: '#cc44cc', fg: '#fff', label:  'ниже −40', desc: 'Полюс холода' },
+];
+
+function getTempStyle(t) {
+  return TEMP_SCALE.find(s => t <= s.max && t >= s.min) || TEMP_SCALE[TEMP_SCALE.length - 1];
+}
+
+// Таблица температур
+const tempTbody = document.getElementById('tempTable');
+TEMP_SCALE.forEach(s => {
+  const mid = Math.round((s.max + Math.max(s.min, -40)) / 2);
+  const sign = mid > 0 ? '+' : '';
+  tempTbody.innerHTML += `
+    <tr>
+      <td style="background:${s.bg};color:${s.fg};font-weight:bold;text-align:center;font-size:15px;width:80px">
+        <span data-tooltip="${s.desc}">${sign}${mid}</span>
+      </td>
+      <td style="background:${s.bg};color:${s.fg};padding:6px 12px">${s.label}</td>
+      <td style="padding:6px 12px;color:#555">${s.desc}</td>
+      <td style="padding:6px 12px">
+        <div style="width:180px;height:10px;background:#e0e8f0;border-radius:5px;overflow:hidden">
+          <div style="height:100%;background:${s.bg};width:${Math.min(100, Math.max(0, (s.max + 40) / 90 * 100))}%;border-radius:5px"></div>
+        </div>
+      </td>
+    </tr>`;
+});
+
+// Интерактивный слайдер температуры
+const tempSlider = document.getElementById('tempSlider');
+const liveTempVal = document.getElementById('liveTempVal');
+const liveTempDesc = document.getElementById('liveTempDesc');
+const liveTempBox = document.getElementById('liveTempBox');
+
+function updateTemp() {
+  const t = parseInt(tempSlider.value);
+  const s = getTempStyle(t);
+  const sign = t > 0 ? '+' : '';
+  liveTempVal.textContent = `${sign}${t} °C`;
+  liveTempVal.style.color = s.bg;
+  liveTempDesc.textContent = s.desc;
+  liveTempBox.style.background = s.bg;
+  liveTempBox.style.color = s.fg;
+  liveTempBox.textContent = `${sign}${t} °C`;
+}
+tempSlider.addEventListener('input', updateTemp);
+updateTemp();
+
+// ===== ДАВЛЕНИЕ =====
+const PRESS_SCALE = [
+  { max: 739, color: '#1a6fc4', label: 'Очень низкое давление' },
+  { max: 748, color: '#4a9fd4', label: 'Низкое давление' },
+  { max: 765, color: '#333333', label: 'Нормальное давление' },
+  { max: 775, color: '#e07820', label: 'Высокое давление' },
+  { max: 999, color: '#c04000', label: 'Очень высокое давление' },
+];
+function getPressStyle(v) { return PRESS_SCALE.find(s => v <= s.max) || PRESS_SCALE[4]; }
+
+const pressSlider = document.getElementById('pressSlider');
+const livePressVal  = document.getElementById('livePressVal');
+const livePressDesc = document.getElementById('livePressDesc');
+pressSlider.addEventListener('input', () => {
+  const v = parseInt(pressSlider.value);
+  const s = getPressStyle(v);
+  livePressVal.textContent = `${v} мм`;
+  livePressVal.style.color = s.color;
+  livePressVal.setAttribute('data-tooltip', s.label);
+  livePressDesc.textContent = s.label;
+});
+pressSlider.dispatchEvent(new Event('input'));
+
+// ===== ВЛАЖНОСТЬ =====
+const HUM_SCALE = [
+  { max:  20, color: '#c04000', label: 'Очень низкая влажность' },
+  { max:  35, color: '#e07820', label: 'Низкая влажность' },
+  { max:  60, color: '#333333', label: 'Комфортная влажность' },
+  { max:  80, color: '#4a9fd4', label: 'Повышенная влажность' },
+  { max:  90, color: '#1a6fc4', label: 'Высокая влажность' },
+  { max: 100, color: '#0a3a8a', label: 'Очень высокая влажность' },
+];
+function getHumStyle(v) { return HUM_SCALE.find(s => v <= s.max) || HUM_SCALE[5]; }
+
+const humSlider = document.getElementById('humSlider');
+const liveHumVal  = document.getElementById('liveHumVal');
+const liveHumDesc = document.getElementById('liveHumDesc');
+humSlider.addEventListener('input', () => {
+  const v = parseInt(humSlider.value);
+  const s = getHumStyle(v);
+  liveHumVal.textContent = `${v}%`;
+  liveHumVal.style.color = s.color;
+  liveHumVal.setAttribute('data-tooltip', s.label);
+  liveHumDesc.textContent = s.label;
+});
+humSlider.dispatchEvent(new Event('input'));
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика погоды — <%= city %></title>
+  <link rel="stylesheet" href="/static/css/rp5.css">
+</head>
+<body>
+  <%- include('_header', { searchAction: '/stats' }) %>
+  
+  <div class="rp5-wrapper rp5-wrapper-archive">
+    
+    <!-- ВКЛАДКИ -->
+    <div class="tabs-row" id="statsTabsRow">
+      <a href="/archive?id=<%= geonameId %>" class="tab-btn" id="stab-archive">
+        <span class="tab-corner-left-inactive"></span>
+        <span class="tab-bg-inactive tab-label">Архив погоды</span>
+        <span class="tab-corner-right-inactive"></span>
+      </a>
+      <a href="/stats?id=<%= geonameId %>" class="tab-btn tab-active" id="stab-stats">
+        <span class="tab-corner-left-active"></span>
+        <span class="tab-bg-active tab-label">Статистика погоды</span>
+        <span class="tab-corner-right-active"></span>
+      </a>
+    </div>
+    
+    <!-- Вкладки периодов -->
+    <div class="period-tabs">
+      <a href="/stats?id=<%= geonameId %>&years=1" class="<%= years === 1 ? 'active' : '' %>">1 год</a>
+      <a href="/stats?id=<%= geonameId %>&years=3" class="<%= years === 3 ? 'active' : '' %>">3 года</a>
+      <a href="/stats?id=<%= geonameId %>&years=5" class="<%= years === 5 ? 'active' : '' %>">5 лет</a>
+      <a href="/stats?id=<%= geonameId %>&years=10" class="<%= years === 10 ? 'active' : '' %>">10 лет</a>
+    </div>
+    
+    <div class="archive-hint">
+      Статистика погоды за <%= years %> <%= years === 1 ? 'год' : years < 5 ? 'года' : 'лет' %>
+      <span style="float:right;color:#888;font-size:11px;">
+        Источник: <%= dataSource %>
+      </span>
+    </div>
+    
+    <!-- Таблица статистики -->
+    <div class="archive-wrap">
+      <table class="archiveTable">
+        <thead>
+          <tr class="arch-head-top">
+            <th rowspan="2" data-tooltip="Месяц">Месяц</th>
+            <th rowspan="2" data-tooltip="Температура воздуха">T</th>
+            <th rowspan="2" data-tooltip="Направление ветра">DD</th>
+            <th colspan="3" data-tooltip="Скорость ветра">Ff</th>
+            <th rowspan="2" data-tooltip="Облачность">N</th>
+            <th rowspan="2" data-tooltip="Погодные явления">WW</th>
+            <th rowspan="2" data-tooltip="Минимальная температура">Tn</th>
+            <th rowspan="2" data-tooltip="Максимальная температура">Tx</th>
+            <th rowspan="2" data-tooltip="Сумма осадков">RRR</th>
+          </tr>
+          <tr class="arch-head-bottom">
+            <th data-tooltip="Средняя скорость">ср</th>
+            <th data-tooltip="Максимальная скорость">макс</th>
+            <th data-tooltip="Порывы">пор</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (rows.length === 0) { %>
+            <tr>
+              <td colspan="10" style="text-align: center; padding: 20px;">
+                Нет данных за выбранный период
+              </td>
+            </tr>
+          <% } else { %>
+            <% rows.forEach(row => { %>
+              <tr>
+                <td class="arch-date-cell"><%= row.monthLabel %></td>
+                <td class="arch-td">
+                  <span class="<%= tempClass(row.T) %>" data-tooltip="<%= tempTooltip(row.T) %>">
+                    <%= row.T != null ? (row.T > 0 ? '+' : '') + row.T : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td"><%= row.windDir || '—' %></td>
+                <td class="arch-td">
+                  <span class="<%= windBfClass(row.Ff) %>" data-tooltip="<%= windBfLabel(row.Ff) %>">
+                    <%= row.Ff != null ? row.Ff : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td">
+                  <span class="<%= windBfClass(row.ff10) %>" data-tooltip="<%= windBfLabel(row.ff10) %> (макс)">
+                    <%= row.ff10 != null ? row.ff10 : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td">
+                  <span class="<%= windBfClass(row.gust) %>" data-tooltip="<%= windBfLabel(row.gust) %> (порыв)">
+                    <%= row.gust != null ? row.gust : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td"><%= row.N != null ? row.N : '—' %></td>
+                <td class="arch-ww-cell"><%= row.WW || '—' %></td>
+                <td class="arch-td">
+                  <span class="<%= tempClass(row.Tn) %>" data-tooltip="<%= tempTooltip(row.Tn) %>">
+                    <%= row.Tn != null ? (row.Tn > 0 ? '+' : '') + row.Tn : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td">
+                  <span class="<%= tempClass(row.Tx) %>" data-tooltip="<%= tempTooltip(row.Tx) %>">
+                    <%= row.Tx != null ? (row.Tx > 0 ? '+' : '') + row.Tx : '—' %>
+                  </span>
+                </td>
+                <td class="arch-td"><%= row.RRR != null ? row.RRR : '—' %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="legend" style="margin-top: 12px; font-size: 12px;">
+      <h3 style="font-size: 14px; margin-bottom: 6px;">Обозначения:</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li><strong>T</strong> — Средняя температура воздуха (°C)</li>
+        <li><strong>DD</strong> — Преобладающее направление ветра</li>
+        <li><strong>Ff</strong> — Средняя/максимальная скорость ветра (м/с)</li>
+        <li><strong>N</strong> — Средняя облачность (%)</li>
+        <li><strong>WW</strong> — Наиболее частые погодные явления</li>
+        <li><strong>Tn/Tx</strong> — Минимальная/Максимальная температура за месяц (°C)</li>
+        <li><strong>RRR</strong> — Сумма осадков за месяц (мм)</li>
+      </ul>
+    </div>
+  </div>
+  
+</body>
+</html>

@@ -1,0 +1,775 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#000000"/>
+  <meta name="description" content="<%= description %>"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com/"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/css/rp5.css"/>
+  <link rel="stylesheet" href="/static/css/sprites.css"/>
+  <title><%= title %></title>
+</head>
+<body>
+
+  <!-- ШАПКА — на всю ширину -->
+  <div class="header-bg">
+
+    <!-- Верхняя полоса: навигация -->
+    <div class="header-topbar">
+      <div class="header-topbar-inner">
+        <nav class="topbar-nav">
+          <a href="/">Главная</a>
+          <a href="/about">О нас</a>
+          <a href="/faq">Частые вопросы</a>
+          <a href="/contacts">Контакты</a>
+          <% if (locals.city && locals.geonameId) { %><a href="/archive?id=<%= geonameId %>">Архив погоды</a><% } %>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Основная часть хидера -->
+    <div class="header-main">
+      <div class="header-main-inner">
+
+        <!-- Логотип -->
+        <div class="header-logo">
+          <a href="/"><img src="/resources/logoPrint.png" alt="logo" class="logo-img"/></a>
+        </div>
+
+        <!-- Центр: страны + поиск -->
+        <div class="header-center">
+          <div class="header-countries">
+            <span class="countries-label">Страны:</span>
+            <a href="/weather?id=524901" class="country-link">Россия</a>
+            <a href="/weather?id=2643743" class="country-link">Великобритания</a>
+            <a href="/weather?id=2950159" class="country-link">Германия</a>
+            <a href="/weather?id=2988507" class="country-link">Франция</a>
+            <a href="/weather?id=1816670" class="country-link">Китай</a>
+            <a href="/" class="country-link country-all">Все страны »</a>
+          </div>
+          <form action="/" method="get" class="search-form" id="searchForm">
+            <input type="text" name="city" id="cityInput" value="<%= city %>" placeholder="Поиск города..." class="search-input" autocomplete="off"/>
+            <button type="submit" class="search-btn"><span class="wi wi-btn-search"></span></button>
+            <div id="searchSuggestions" class="search-suggestions"></div>
+          </form>
+        </div>
+
+        <!-- Правые кнопки -->
+        <div class="header-btns">
+          <!-- Язык -->
+          <div class="hbtn-wrap" id="langWrap">
+            <button class="hbtn hbtn-sprite wi wi-btn-lang" id="langBtn" title="Язык"><span class="hbtn-label">Язык</span></button>
+            <div class="hbtn-dropdown" id="langDropdown">
+              <div class="hbtn-dropdown-title">Язык</div>
+              <a href="?lang=ru" class="hbtn-option <%= (locals.lang||'ru')==='ru' ? 'active' : '' %>">🇷🇺 Русский</a>
+              <a href="?lang=en" class="hbtn-option <%= (locals.lang||'ru')==='en' ? 'active' : '' %>">🇬🇧 English</a>
+            </div>
+          </div>
+
+          <!-- Настройки -->
+          <div class="hbtn-wrap" id="settingsWrap">
+            <button class="hbtn hbtn-sprite wi wi-btn-settings" id="settingsBtn" title="Настройки"><span class="hbtn-label">Настройки</span></button>
+            <div class="hbtn-dropdown hbtn-dropdown-wide" id="settingsDropdown">
+              <div class="hbtn-dropdown-title">Настройки</div>
+
+              <div class="settings-row">
+                <label>Температура</label>
+                <select name="temp_unit" class="settings-select">
+                  <option value="celsius" selected>°C (Цельсий)</option>
+                  <option value="fahrenheit">°F (Фаренгейт)</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Ветер</label>
+                <select name="wind_unit" class="settings-select">
+                  <option value="ms" selected>м/с</option>
+                  <option value="kmh">км/ч</option>
+                  <option value="mph">миль/ч</option>
+                  <option value="kn">узлы</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Давление</label>
+                <select name="pressure_unit" class="settings-select">
+                  <option value="mmhg" selected>мм рт.ст.</option>
+                  <option value="hpa">гПа</option>
+                  <option value="mbar">мбар</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Осадки</label>
+                <select name="precip_unit" class="settings-select">
+                  <option value="mm" selected>мм</option>
+                  <option value="inch">дюймы</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Видимость</label>
+                <select name="vis_unit" class="settings-select">
+                  <option value="km">км</option>
+                  <option value="m">м</option>
+                  <option value="miles">мили</option>
+                </select>
+              </div>
+              <div class="settings-row">
+                <label>Модель прогноза</label>
+                <select name="model" class="settings-select">
+                  <option value="best_match" selected>Best Match (авто)</option>
+                  <option value="ecmwf_ifs025">ECMWF IFS</option>
+                  <option value="gfs_seamless">GFS (NCEP)</option>
+                  <option value="icon_seamless">ICON (DWD)</option>
+                  <option value="gem_seamless">GEM (Canada)</option>
+                  <option value="meteofrance_seamless">Météo-France</option>
+                  <option value="ukmo_seamless">UKMO</option>
+                  <option value="cma_grapes_global">CMA GRAPES</option>
+                  <option value="bom_access_global">BOM ACCESS (Australia)</option>
+                  <option value="era5_seamless">ERA5 (реанализ)</option>
+                </select>
+              </div>
+              <div class="settings-row settings-save-row">
+                <button type="button" class="settings-save-btn" id="settingsSaveBtn">Сохранить</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb-inner">
+    <%
+    const bcNorm = s => (s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+    const hasCyrillic = s => /[а-яёА-ЯЁ]/.test(s||'');
+    const hasLatin    = s => /[a-zA-Z]/.test(s||'');
+    const cityN = bcNorm(city);
+    // Показываем admin если: не пустой, не совпадает с городом по норме,
+    // и не является латинским дублём кириллического города
+    const bcShow = (val, ...exclude) => {
+      if (!val) return false;
+      if (bcNorm(val) === cityN) return false;
+      if (exclude.some(e => bcNorm(val) === bcNorm(e))) return false;
+      // Скрываем латинский admin если город на кириллице (дубль на другом языке)
+      if (hasLatin(val) && hasCyrillic(city)) return false;
+      return true;
+    };
+    %>
+    <a href="/" class="bc-link">Все страны</a>
+    <% if (country) { %>
+      <span class="bc-sep">›</span>
+      <a href="/<%= locals.countryNameEn || toSlug(country) %>" class="bc-link"><%= country %></a>
+    <% } %>
+    <% if (bcShow(admin1)) { %>
+      <span class="bc-sep">›</span>
+      <% if (stateCode && (locals.admin1En || locals.countryNameEn)) { %>
+        <a href="/<%= locals.countryNameEn || toSlug(country) %>/<%= toSlug(locals.admin1En || admin1) %>" class="bc-link"><%= admin1 %></a>
+      <% } else { %>
+        <span class="bc-link"><%= admin1 %></span>
+      <% } %>
+    <% } %>
+    <% if (bcShow(admin2, admin1)) { %>
+      <span class="bc-sep">›</span>
+      <span class="bc-link"><%= admin2 %></span>
+    <% } %>
+    <% if (bcShow(admin3, admin1, admin2)) { %>
+      <span class="bc-sep">›</span>
+      <span class="bc-link"><%= admin3 %></span>
+    <% } %>
+    <% if (bcShow(admin4, admin1, admin2, admin3)) { %>
+      <span class="bc-sep">›</span>
+      <span class="bc-link"><%= admin4 %></span>
+    <% } %>
+    <span class="bc-sep">›</span>
+    <span class="bc-current"><%= city %></span>
+  </div>
+  <% if (nearestAirports && nearestAirports.length > 0) { %>
+  <div class="airport-links">
+    <% nearestAirports.forEach((airport) => { %>
+      <a href="/archive?id=<%= airport.id %>" class="airport-link">
+        <span class="airport-icon"></span>
+        <span class="airport-arrow"></span>
+        <span class="airport-text">
+          Архив погоды в аэропорту (<%= Math.round(airport.distance) %> км<% if (airport.temperature != null) { %>, <%= airport.temperature > 0 ? '+' : '' %><%= Math.round(airport.temperature * 10) / 10 %> °C<% } %>)
+        </span>
+      </a>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+
+<div class="rp5-wrapper">
+
+  <!-- ТЕКУЩАЯ ПОГОДА -->
+  <div class="current-weather">
+    <div class="current-temp">
+      <% if (currentTemp > 0) { %>+<% } %><%= currentTemp %> °C
+    </div>
+    <div class="current-feels">
+      ощущается как <% if (currentFeelsLike > 0) { %>+<% } %><%= currentFeelsLike %> °C
+    </div>
+    <% if (archiveInfo) { %>
+    <div class="current-archive">
+      <%= archiveInfo.text %><a href="/archive?id=<%= geonameId %>" class="archive-link">Архив погоды на метеостанции</a>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- ОБОБЩЁННЫЙ ПРОГНОЗ -->
+  <div class="forecast-summary"><%= forecastText %></div>
+
+  <!-- ВКЛАДКИ -->
+  <div class="tabs-row" id="tabsRow">
+    <% tabs.forEach(function(t) { %>
+      <a href="#" data-tab="<%= t.id %>" data-date="<%= t.id !== '7days' ? t.id : '' %>"
+         class="tab-btn tab-inactive<%= t.isWeekend ? ' tab-weekend' : '' %>"
+         id="tab-<%= t.id %>">
+        <span class="tab-corner-left-inactive" id="tab-cl-<%= t.id %>"></span>
+        <span class="tab-bg-inactive tab-label<%= t.isWeekend ? ' tab-label-weekend' : '' %>" id="tab-bg-<%= t.id %>"><%= t.label %></span>
+        <span class="tab-corner-right-inactive" id="tab-cr-<%= t.id %>"></span>
+      </a>
+    <% }); %>
+  </div>
+
+  <%
+  function dayBorder(i, _slots) {
+    const s = _slots[i];
+    let cls = '';
+    if (i === 0 || _slots[i-1].dayIndex !== s.dayIndex) cls += ' day-border-left';
+    if (s.isFirst) cls += ' cell-first';
+    if (s.isLast)  cls += ' cell-last';
+    return cls;
+  }
+  // Заголовки с учётом единиц
+  const hTemp     = `Температура, ${settings.temp_unit === 'fahrenheit' ? '°F' : '°C'}`;
+  const hFeels    = `Ощущается как, ${settings.temp_unit === 'fahrenheit' ? '°F' : '°C'}`;
+  const hWind     = `Ветер: скорость, ${{ ms:'м/с', kmh:'км/ч', mph:'миль/ч', kn:'уз' }[settings.wind_unit] || 'м/с'}`;
+  const hGust     = `порывы, ${{ ms:'м/с', kmh:'км/ч', mph:'миль/ч', kn:'уз' }[settings.wind_unit] || 'м/с'}`;
+  const hPressure = `Давление, ${{ mmhg:'мм рт. ст.', hpa:'гПа', mbar:'мбар' }[settings.pressure_unit] || 'мм рт. ст.'}`;
+  const hPrecip   = `Осадки, ${settings.precip_unit === 'inch' ? 'дюйм' : 'мм'}`;
+
+  // Хелперы цветовых схем
+  function tempClass(t) {
+    if (t >= 41) return 'tc-50';
+    if (t >= 31) return 'tc-40';
+    if (t >= 26) return 'tc-30';
+    if (t >= 21) return 'tc-25';
+    if (t >= 16) return 'tc-20';
+    if (t >= 11) return 'tc-15';
+    if (t >=  6) return 'tc-10';
+    if (t >=  1) return 'tc-5';
+    if (t ===  0) return 'tc-0';
+    if (t >=  -5) return 'tc-m5';
+    if (t >= -10) return 'tc-m10';
+    if (t >= -15) return 'tc-m15';
+    if (t >= -20) return 'tc-m20';
+    if (t >= -30) return 'tc-m30';
+    return 'tc-m40';
+  }
+  function tempTooltip(t) {
+    if (t >= 41) return 'Экстремальная жара';
+    if (t >= 31) return 'Сильная жара';
+    if (t >= 26) return 'Жара';
+    if (t >= 21) return 'Тепло';
+    if (t >= 16) return 'Комфортно тепло';
+    if (t >= 11) return 'Умеренно тепло';
+    if (t >=  6) return 'Прохладно';
+    if (t >=  1) return 'Холодновато';
+    if (t ===  0) return '0 градусов';
+    if (t >=  -5) return 'Лёгкий мороз';
+    if (t >= -10) return 'Умеренный мороз';
+    if (t >= -15) return 'Мороз';
+    if (t >= -20) return 'Сильный мороз';
+    if (t >= -30) return 'Очень сильный мороз';
+    return 'Экстремальный мороз';
+  }
+  function windBfClass(ms) {
+    if (ms <= 0.2) return '';
+    if (ms <= 1.5) return '';
+    if (ms <= 3.3) return '';
+    if (ms <= 5.4) return '';
+    if (ms <= 7.9) return 'wind-b4';
+    if (ms <= 10.7) return 'wind-b5';
+    if (ms <= 13.8) return 'wind-b6';
+    if (ms <= 17.1) return 'wind-b7';
+    if (ms <= 20.7) return 'wind-b8';
+    if (ms <= 24.4) return 'wind-b9';
+    if (ms <= 28.4) return 'wind-b10';
+    if (ms <= 32.6) return 'wind-b11';
+    return 'wind-b12';
+  }
+  function windBfColor(ms) {
+    if (ms <= 5.4) return '';
+    if (ms <= 7.9) return '#22aa55';
+    if (ms <= 10.7) return '#ee9900';
+    if (ms <= 13.8) return '#ee6600';
+    if (ms <= 17.1) return '#dd4400';
+    if (ms <= 20.7) return '#cc0000';
+    if (ms <= 24.4) return '#aa0000';
+    if (ms <= 28.4) return '#880000';
+    if (ms <= 32.6) return '#660000';
+    return '#440000';
+  }
+  function windBfLabel(ms) {
+    if (ms <= 0.2) return 'Штиль';
+    if (ms <= 1.5) return 'Тихий';
+    if (ms <= 3.3) return 'Лёгкий';
+    if (ms <= 5.4) return 'Слабый';
+    if (ms <= 7.9) return 'Умеренный';
+    if (ms <= 10.7) return 'Свежий';
+    if (ms <= 13.8) return 'Сильный';
+    if (ms <= 17.1) return 'Крепкий';
+    if (ms <= 20.7) return 'Очень крепкий';
+    if (ms <= 24.4) return 'Шторм';
+    if (ms <= 28.4) return 'Сильный шторм';
+    if (ms <= 32.6) return 'Жестокий шторм';
+    return 'Ураган';
+  }
+  function pressClass(p) {
+    if (p < 740) return 'press-vlow';
+    if (p <= 748) return 'press-low';
+    if (p <= 765) return '';
+    if (p <= 775) return 'press-high';
+    return 'press-vhigh';
+  }
+  function pressTooltip(p) {
+    if (p < 740) return 'Очень низкое давление';
+    if (p <= 748) return 'Низкое давление';
+    if (p <= 765) return 'Нормальное давление';
+    if (p <= 775) return 'Высокое давление';
+    return 'Очень высокое давление';
+  }
+  function humClass(h) {
+    if (h <= 20) return 'hum-vlow';
+    if (h <= 35) return 'hum-low';
+    if (h <= 60) return '';
+    if (h <= 80) return 'hum-elevated';
+    if (h <= 90) return 'hum-high';
+    return 'hum-vhigh';
+  }
+  function humTooltip(h) {
+    if (h <= 20) return 'Очень низкая влажность';
+    if (h <= 35) return 'Низкая влажность';
+    if (h <= 60) return 'Комфортная влажность';
+    if (h <= 80) return 'Повышенная влажность';
+    if (h <= 90) return 'Высокая влажность';
+    return 'Очень высокая влажность';
+  }
+  %>
+
+  <!-- ТАБЛИЦА 7 СУТОК -->
+  <div id="view-7days" class="forecast-wrap">
+    <table class="forecastTable">
+      <thead>
+        <tr class="row-dates">
+          <td class="title-cell"></td>
+          <% days.forEach(function(d) { %>
+            <td colspan="<%= d.colspan %>" class="forecast-date<%= d.isWeekend ? ' weekend' : '' %> day-border-left"><%= d.label %></td>
+          <% }); %>
+          <td class="title-cell title-cell-right"></td>
+        </tr>
+        <tr class="row-time">
+          <td class="title-cell">Местное время</td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><%= s.time %></td><% }); %>
+          <td class="title-cell title-cell-right">Местное время</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-cloud">
+          <td class="title-cell">Облачность, %</td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, slots) %>"><%- cloudIcon(s.cloudState, s.isDay) %></td><% }); %>
+          <td class="title-cell title-cell-right">Облачность, %</td>
+        </tr>
+        <tr class="row-precip">
+          <td class="title-cell"><a href="#" title="Толщина слоя выпавшей воды"><%= hPrecip %></a></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, slots) %>"><%- precipIcon(s.precip, s.precipMm, s.thunder) %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hPrecip %></td>
+        </tr>
+        <tr class="row-fog">
+          <td class="title-cell">Туман, %</td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, slots) %>"><%- fogIcon(s.fog) %></td><% }); %>
+          <td class="title-cell title-cell-right">Туман, %</td>
+        </tr>
+        <tr class="row-temp">
+          <td class="title-cell"><%= hTemp %></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><span class="<%= tempClass(s.temp) %>" data-tooltip="<%= tempTooltip(s.temp) %>"><% if (s.temp > 0) { %>+<% } %><%= s.temp %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hTemp %></td>
+        </tr>
+        <tr class="row-feels">
+          <td class="title-cell"><%= hFeels %></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><% if (s.feelsLike != null) { %><span class="<%= tempClass(s.feelsLike) %>" data-tooltip="<%= tempTooltip(s.feelsLike) %>"><% if (s.feelsLike > 0) { %>+<% } %><%= s.feelsLike %></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hFeels %></td>
+        </tr>
+        <tr class="row-pressure">
+          <td class="title-cell"><%= hPressure %></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><span class="<%= pressClass(s.pressure) %>" data-tooltip="<%= pressTooltip(s.pressure) %>"><%= s.pressure %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hPressure %></td>
+        </tr>
+        <tr class="row-wind-speed">
+          <td class="title-cell"><%= hWind %></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><span class="wind-arrow" style="display:inline-block;transform:rotate(<%= s.windDeg %>deg)">◄</span> <span class="<%= windBfClass(s.windSpeed) %>" data-tooltip="<%= windBfLabel(s.windSpeed) %>"><%= s.windSpeed %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hWind %></td>
+        </tr>
+        <tr class="row-wind-gust">
+          <td class="title-cell"><%= hGust %></td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><% if (s.windGust) { %><span class="<%= windBfClass(s.windGust) %>" data-tooltip="<%= windBfLabel(s.windGust) %> (порыв)"><%= s.windGust %></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hGust %></td>
+        </tr>
+        <tr class="row-wind-dir">
+          <td class="title-cell">направление</td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><%= s.windDir %></td><% }); %>
+          <td class="title-cell title-cell-right">направление</td>
+        </tr>
+        <tr class="row-humidity">
+          <td class="title-cell">Влажность, %</td>
+          <% slots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, slots) %>"><span class="<%= humClass(s.humidity) %>" data-tooltip="<%= humTooltip(s.humidity) %>"><%= s.humidity %></span></td><% }); %>
+          <td class="title-cell title-cell-right">Влажность, %</td>
+        </tr>
+      </tbody>
+      <tbody id="sunMoonBody" class="sun-moon-body">
+        <tr class="row-sun">
+          <td class="title-cell">Солнце: восход заход</td>
+          <% days.forEach(function(d) { %><td colspan="<%= d.colspan %>" class="cell-d sun-moon-cell day-border-left"><span class="sun-time"><%= d.sunrise %></span> <span class="sun-time"><%= d.sunset %></span></td><% }); %>
+          <td class="title-cell title-cell-right">Солнце: восход заход</td>
+        </tr>
+        <tr class="row-moon">
+          <td class="title-cell">Луна: восход заход фаза</td>
+          <% days.forEach(function(d) { %><td colspan="<%= d.colspan %>" class="sun-moon-cell day-border-left"><span class="moon-time"><%= d.moonrise %></span> <span class="moon-time"><%= d.moonset %></span><% if (d.moonPhase) { %><br><span class="wi <%= d.moonPhase.cls %> moon-phase-icon" data-tooltip="<%= d.moonPhase.label %>"></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right">Луна: восход заход фаза</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ТАБЛИЦА ПОЧАСОВАЯ (все дни) -->
+  <div id="view-hourly" class="forecast-wrap" style="display:none">
+    <table class="forecastTable" id="hourlyTable">
+      <thead>
+        <tr class="row-dates">
+          <td class="title-cell"></td>
+          <% allHourlyDays.forEach(function(d) { %>
+            <td colspan="<%= d.colspan %>" class="forecast-date<%= d.isWeekend ? ' weekend' : '' %> day-border-left" data-date="<%= d.date %>"><%= d.label %></td>
+          <% }); %>
+          <td class="title-cell title-cell-right"></td>
+        </tr>
+        <tr class="row-time">
+          <td class="title-cell">Местное время</td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><%= s.time %></td><% }); %>
+          <td class="title-cell title-cell-right">Местное время</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row-cloud">
+          <td class="title-cell">Облачность, %</td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, allHourlySlots) %>"><%- cloudIcon(s.cloudState, s.isDay) %></td><% }); %>
+          <td class="title-cell title-cell-right">Облачность, %</td>
+        </tr>
+        <tr class="row-precip">
+          <td class="title-cell"><a href="#" title="Толщина слоя выпавшей воды"><%= hPrecip %></a></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, allHourlySlots) %>"><%- precipIcon(s.precip, s.precipMm, s.thunder) %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hPrecip %></td>
+        </tr>
+        <tr class="row-fog">
+          <td class="title-cell">Туман, %</td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %> icon-cell<%= dayBorder(i, allHourlySlots) %>"><%- fogIcon(s.fog) %></td><% }); %>
+          <td class="title-cell title-cell-right">Туман, %</td>
+        </tr>
+        <tr class="row-temp">
+          <td class="title-cell"><%= hTemp %></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><span class="<%= tempClass(s.temp) %>" data-tooltip="<%= tempTooltip(s.temp) %>"><% if (s.temp > 0) { %>+<% } %><%= s.temp %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hTemp %></td>
+        </tr>
+        <tr class="row-feels">
+          <td class="title-cell"><%= hFeels %></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><% if (s.feelsLike != null) { %><span class="<%= tempClass(s.feelsLike) %>" data-tooltip="<%= tempTooltip(s.feelsLike) %>"><% if (s.feelsLike > 0) { %>+<% } %><%= s.feelsLike %></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hFeels %></td>
+        </tr>
+        <tr class="row-pressure">
+          <td class="title-cell"><%= hPressure %></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><span class="<%= pressClass(s.pressure) %>" data-tooltip="<%= pressTooltip(s.pressure) %>"><%= s.pressure %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hPressure %></td>
+        </tr>
+        <tr class="row-wind-speed">
+          <td class="title-cell"><%= hWind %></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><span class="wind-arrow" style="display:inline-block;transform:rotate(<%= s.windDeg %>deg)">◄</span> <span class="<%= windBfClass(s.windSpeed) %>" data-tooltip="<%= windBfLabel(s.windSpeed) %>"><%= s.windSpeed %></span></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hWind %></td>
+        </tr>
+        <tr class="row-wind-gust">
+          <td class="title-cell"><%= hGust %></td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><% if (s.windGust) { %><span class="<%= windBfClass(s.windGust) %>" data-tooltip="<%= windBfLabel(s.windGust) %> (порыв)"><%= s.windGust %></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right"><%= hGust %></td>
+        </tr>
+        <tr class="row-wind-dir">
+          <td class="title-cell">направление</td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><%= s.windDir %></td><% }); %>
+          <td class="title-cell title-cell-right">направление</td>
+        </tr>
+        <tr class="row-humidity">
+          <td class="title-cell">Влажность, %</td>
+          <% allHourlySlots.forEach(function(s, i) { %><td class="cell-<%= s.dayType %><%= dayBorder(i, allHourlySlots) %>"><span class="<%= humClass(s.humidity) %>" data-tooltip="<%= humTooltip(s.humidity) %>"><%= s.humidity %></span></td><% }); %>
+          <td class="title-cell title-cell-right">Влажность, %</td>
+        </tr>
+      </tbody>
+      <tbody id="sunMoonBodyHourly" class="sun-moon-body">
+        <tr class="row-sun">
+          <td class="title-cell">Солнце: восход заход</td>
+          <% allHourlyDays.forEach(function(d) { %><td colspan="<%= d.colspan %>" class="cell-d sun-moon-cell day-border-left"><span class="sun-time"><%= d.sunrise %></span> <span class="sun-time"><%= d.sunset %></span></td><% }); %>
+          <td class="title-cell title-cell-right">Солнце: восход заход</td>
+        </tr>
+        <tr class="row-moon">
+          <td class="title-cell">Луна: восход заход фаза</td>
+          <% allHourlyDays.forEach(function(d) { %><td colspan="<%= d.colspan %>" class="sun-moon-cell day-border-left"><span class="moon-time"><%= d.moonrise %></span> <span class="moon-time"><%= d.moonset %></span><% if (d.moonPhase) { %><br><span class="wi <%= d.moonPhase.cls %> moon-phase-icon" data-tooltip="<%= d.moonPhase.label %>"></span><% } %></td><% }); %>
+          <td class="title-cell title-cell-right">Луна: восход заход фаза</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Кнопка свернуть/развернуть — вне скролла -->
+  <div class="toggle-sun-moon" id="toggleSunMoon">
+    <span id="toggleSunMoonLabel">▲ Свернуть таблицу</span>
+  </div>
+
+</div>
+
+<script>
+// Автодополнение поиска
+const input = document.getElementById('cityInput');
+const suggestions = document.getElementById('searchSuggestions');
+let timer;
+input.addEventListener('input', function() {
+  clearTimeout(timer);
+  const q = this.value.trim();
+  if (q.length < 2) { suggestions.innerHTML = ''; suggestions.style.display = 'none'; return; }
+  timer = setTimeout(async () => {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    if (!data.length) { suggestions.style.display = 'none'; return; }
+    suggestions.innerHTML = data.map(c =>
+      `<div class="suggestion-item" data-name="${c.name}" data-id="${c.id || ''}">
+        ${c.name}${c.region ? ', ' + c.region : ''}, ${c.country}
+      </div>`
+    ).join('');
+    suggestions.style.display = 'block';
+    suggestions.querySelectorAll('.suggestion-item').forEach(el => {
+      el.addEventListener('click', () => {
+        suggestions.style.display = 'none';
+        const id = el.dataset.id;
+        if (id) {
+          window.location.href = '/weather?id=' + id;
+        } else {
+          input.value = el.dataset.name;
+          document.getElementById('searchForm').submit();
+        }
+      });
+    });
+  }, 300);
+});
+document.addEventListener('click', e => {
+  if (!suggestions.contains(e.target) && e.target !== input) suggestions.style.display = 'none';
+});
+
+// Dropdown кнопки хидера
+document.querySelectorAll('.hbtn-wrap').forEach(wrap => {
+  const btn = wrap.querySelector('.hbtn');
+  const dd  = wrap.querySelector('.hbtn-dropdown');
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    document.querySelectorAll('.hbtn-dropdown.open').forEach(d => { if(d !== dd) d.classList.remove('open'); });
+    dd.classList.toggle('open');
+  });
+});
+document.addEventListener('click', e => {
+  document.querySelectorAll('.hbtn-dropdown.open').forEach(d => {
+    if (!d.contains(e.target)) d.classList.remove('open');
+  });
+});
+
+// Вертикальный градиент для ночных колонок
+(function () {
+  function applyGradient(table) {
+    if (!table) return;
+    const timeRow = table.querySelector('tr.row-time');
+    if (!timeRow) return;
+    const timeCells = Array.from(timeRow.querySelectorAll('td'));
+
+    const mainRows = Array.from(table.querySelectorAll(
+      'tr.row-time, tr.row-cloud, tr.row-precip, tr.row-fog, ' +
+      'tr.row-temp, tr.row-feels, tr.row-pressure, ' +
+      'tr.row-wind-speed, tr.row-wind-gust, tr.row-wind-dir, tr.row-humidity'
+    ));
+    if (!mainRows.length) return;
+
+    // Общая высота блока строк (от верха первой до низа последней)
+    const topRect = mainRows[0].getBoundingClientRect();
+    const botRect = mainRows[mainRows.length - 1].getBoundingClientRect();
+    const totalH  = botRect.bottom - topRect.top;
+    if (totalH <= 0) return;
+
+    const colorAt = p => {
+      const r = Math.round(168 + (255 - 168) * p);
+      const g = Math.round(192 + (255 - 192) * p);
+      const b = Math.round(216 + (255 - 216) * p);
+      return `rgb(${r},${g},${b})`;
+    };
+
+    timeCells.forEach((td, colIdx) => {
+      const isNight = td.classList.contains('cell-n') || td.classList.contains('cell-n2') ||
+                      td.classList.contains('cell-first') || td.classList.contains('cell-last');
+      if (!isNight) return;
+
+      mainRows.forEach(row => {
+        const tds = row.querySelectorAll('td');
+        const cell = tds[colIdx];
+        if (!cell) return;
+        const cellRect = cell.getBoundingClientRect();
+        const pStart = (cellRect.top  - topRect.top) / totalH;
+        const pEnd   = (cellRect.bottom - topRect.top) / totalH;
+        cell.style.setProperty('background',
+          `linear-gradient(to bottom, ${colorAt(pStart)}, ${colorAt(pEnd)})`, 'important');
+      });
+    });
+  }
+
+  function applyAll() {
+    document.querySelectorAll('.forecastTable').forEach(applyGradient);
+  }
+
+  window.addEventListener('load', applyAll);
+
+  // Перерисовать при переключении вкладок
+  window._applyGradient = applyAll;
+})();
+const toggleBtn = document.getElementById('toggleSunMoon');
+const toggleLabel = document.getElementById('toggleSunMoonLabel');
+if (toggleBtn) {
+  toggleBtn.addEventListener('click', () => {
+    // Скрываем/показываем sun-moon в активной таблице
+    const activeWrap = document.querySelector('.forecast-wrap:not([style*="display:none"])') ||
+                       document.getElementById('view-7days');
+    const smBody = activeWrap.querySelector('.sun-moon-body');
+    if (!smBody) return;
+    const hidden = smBody.classList.toggle('hidden');
+    toggleLabel.textContent = hidden
+      ? '▼ Развернуть таблицу (Солнце, Луна: восход, заход, фаза)'
+      : '▲ Свернуть таблицу';
+  });
+}
+
+// Вкладки — переключение без перезагрузки
+(function () {
+  const view7 = document.getElementById('view-7days');
+  const viewH = document.getElementById('view-hourly');
+  const allTabs = Array.from(document.querySelectorAll('#tabsRow .tab-btn'));
+
+  function setActive(tabId) {
+    // Обновить стили вкладок
+    allTabs.forEach(a => {
+      const id = a.dataset.tab;
+      const isActive = id === tabId;
+      const cl = document.getElementById('tab-cl-' + id);
+      const cr = document.getElementById('tab-cr-' + id);
+      const bg = document.getElementById('tab-bg-' + id);
+      // Класс на самой кнопке для CSS-правила .tab-active .tab-label
+      a.classList.toggle('tab-active', isActive);
+      if (cl) { cl.className = isActive ? 'tab-corner-left-active' : 'tab-corner-left-inactive'; }
+      if (cr) { cr.className = isActive ? 'tab-corner-right-active' : 'tab-corner-right-inactive'; }
+      if (bg) {
+        bg.className = bg.className
+          .replace('tab-bg-active', 'tab-bg-inactive')
+          .replace('tab-bg-inactive', isActive ? 'tab-bg-active' : 'tab-bg-inactive');
+      }
+    });
+
+    if (tabId === '7days') {
+      view7.style.display = '';
+      viewH.style.display = 'none';
+    } else {
+      view7.style.display = 'none';
+      viewH.style.display = '';
+      // Скролл к нужному дню
+      const dateCell = viewH.querySelector(`td[data-date="${tabId}"]`);
+      if (dateCell) {
+        const wrap = viewH;
+        const titleW = 130;
+        wrap.scrollLeft = dateCell.offsetLeft - titleW;
+      }
+      // Применить градиент к почасовой таблице
+      requestAnimationFrame(() => { if (window._applyGradient) window._applyGradient(); });
+    }
+  }
+
+  allTabs.forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      setActive(a.dataset.tab);
+    });
+  });
+
+  // Активировать первую вкладку по умолчанию
+  setActive('7days');
+
+  // Обновлять активную вкладку при скролле почасовой таблицы
+  const dateCells = Array.from(viewH.querySelectorAll('td[data-date]'));
+  if (dateCells.length && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      // Найти самую левую видимую ячейку дня
+      let leftmost = null;
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          if (!leftmost || e.boundingClientRect.left < leftmost.boundingClientRect.left) {
+            leftmost = e;
+          }
+        }
+      });
+      if (leftmost) {
+        const date = leftmost.target.dataset.date;
+        if (date) {
+          allTabs.forEach(a => {
+            const id = a.dataset.tab;
+            const isActive = id === date;
+            a.classList.toggle('tab-active', isActive);
+            const cl = document.getElementById('tab-cl-' + id);
+            const cr = document.getElementById('tab-cr-' + id);
+            const bg = document.getElementById('tab-bg-' + id);
+            if (cl) cl.className = isActive ? 'tab-corner-left-active' : 'tab-corner-left-inactive';
+            if (cr) cr.className = isActive ? 'tab-corner-right-active' : 'tab-corner-right-inactive';
+            if (bg) bg.className = bg.className
+              .replace(/tab-bg-(active|inactive)/, isActive ? 'tab-bg-active' : 'tab-bg-inactive');
+          });
+        }
+      }
+    }, {
+      root: viewH,
+      threshold: 0.5,
+    });
+    dateCells.forEach(td => observer.observe(td));
+  }
+})();
+
+// Восстановление настроек при загрузке — из URL или localStorage
+(function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  document.querySelectorAll('.settings-select').forEach(sel => {
+    const fromUrl = urlParams.get(sel.name);
+    const fromStorage = localStorage.getItem(sel.name);
+    if (fromUrl) sel.value = fromUrl;
+    else if (fromStorage) sel.value = fromStorage;
+  });
+})();
+// Кнопка сохранить
+document.getElementById('settingsSaveBtn').addEventListener('click', () => {
+  const params = new URLSearchParams(window.location.search);
+  document.querySelectorAll('.settings-select').forEach(sel => {
+    localStorage.setItem(sel.name, sel.value);
+    params.set(sel.name, sel.value);
+  });
+  document.getElementById('settingsDropdown').classList.remove('open');
+  window.location.search = params.toString();
+});
+</script>
+</body>
+</html>

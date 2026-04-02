@@ -1,0 +1,32 @@
+# Crontab для автоматического обновления данных RP5
+# Запуск каждые 3 часа по Екатеринбургскому времени (UTC+5)
+
+# Екатеринбург 00:00 = UTC 19:00 (предыдущий день)
+0 19 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 03:00 = UTC 22:00 (предыдущий день)
+0 22 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 06:00 = UTC 01:00
+0 1 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 09:00 = UTC 04:00
+0 4 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 12:00 = UTC 07:00
+0 7 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 15:00 = UTC 10:00
+0 10 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 18:00 = UTC 13:00
+0 13 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Екатеринбург 21:00 = UTC 16:00
+0 16 * * * cd /path/to/project && python3 rp5-realtime-updater.py >> logs/rp5-update.log 2>&1
+
+# Установка:
+# 1. Замените /path/to/project на реальный путь
+# 2. Создайте папку logs: mkdir -p logs
+# 3. Установите crontab: crontab crontab-rp5.txt
+# 4. Проверьте: crontab -l

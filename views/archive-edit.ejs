@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Редактирование архива погоды</title>
+  <link rel="stylesheet" href="/css/rp5.css">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .auth-form { max-width: 400px; margin: 50px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .auth-form h2 { margin-top: 0; }
+    .auth-form input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    .auth-form button { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+    .auth-form button:hover { background: #45a049; }
+    
+    .edit-container { max-width: 1400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .edit-header { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #ddd; }
+    .edit-header h1 { margin: 0 0 10px 0; }
+    .edit-controls { margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .edit-controls label { font-weight: bold; }
+    .edit-controls input, .edit-controls select { padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+    .edit-controls button { padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    .edit-controls button:hover { background: #0b7dda; }
+    .edit-controls .save-btn { background: #4CAF50; }
+    .edit-controls .save-btn:hover { background: #45a049; }
+    .edit-controls .add-period-btn { background: #FF9800; }
+    .edit-controls .add-period-btn:hover { background: #e68900; }
+    .edit-controls .delete-btn:hover { background: #da190b; }
+    
+    .edit-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .edit-table th, .edit-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    .edit-table th { background: #f0f0f0; font-weight: bold; position: sticky; top: 0; z-index: 10; }
+    .edit-table input { width: 90%; padding: 4px; border: 1px solid #ccc; border-radius: 3px; text-align: center; }
+    .edit-table input:focus { border-color: #2196F3; outline: none; }
+    .edit-table .date-cell { background: #f9f9f9; font-weight: bold; }
+    .edit-table .time-cell { background: #f9f9f9; }
+    .edit-table .edited { background: #fff3cd; }
+    
+    .action-buttons { display: flex; gap: 5px; justify-content: center; }
+    .action-buttons button { padding: 4px 8px; font-size: 12px; border: none; border-radius: 3px; cursor: pointer; }
+    .reset-btn { background: #ff9800; color: white; }
+    .reset-btn:hover { background: #e68900; }
+    .delete-btn { background: #f44336; color: white; }
+    .delete-btn:hover { background: #da190b; }
+    
+    .message { padding: 15px; margin: 15px 0; border-radius: 4px; }
+    .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+  </style>
+</head>
+<body>
+
+<% if (!authenticated) { %>
+  <div class="auth-form">
+    <h2>Вход в редактор архива</h2>
+    <form method="POST" action="/archive/edit/auth">
+      <input type="hidden" name="id" value="<%= geonameId || '' %>">
+      <input type="hidden" name="date" value="<%= endDate %>">
+      <input type="hidden" name="period" value="<%= period %>">
+      <label>Пароль:</label>
+      <input type="password" name="password" required autofocus>
+      <button type="submit">Войти</button>
+    </form>
+  </div>
+<% } else { %>
+  <div class="edit-container">
+    <div class="edit-header">
+      <h1>Редактирование архива погоды — <%= city %></h1>
+      <p>Здесь вы можете редактировать каждый параметр архива погоды. Пустые значения будут отображаться как пустые в архиве.</p>
+    </div>
+    
+    <div class="edit-controls">
+      <label>Город ID:</label>
+      <input type="number" id="cityId" value="<%= geonameId %>" style="width: 120px;">
+      
+      <label>Дата окончания:</label>
+      <input type="date" id="endDate" value="<%= endDate %>">
+      
+      <label>Период (дней):</label>
+      <input type="number" id="periodDays" value="<%= period %>" min="1" max="30" style="width: 80px;">
+      
+      <label>Час:</label>
+      <select id="hourSelect">
+        <option value="all">Все часы</option>
+        <option value="00">00</option>
+        <option value="03">03</option>
+        <option value="06">06</option>
+        <option value="09">09</option>
+        <option value="12">12</option>
+        <option value="15">15</option>
+        <option value="18">18</option>
+        <option value="21">21</option>
+      </select>
+      
+      <button onclick="loadData()">Загрузить</button>
+      <button class="save-btn" onclick="saveEdits()">Сохранить изменения</button>
+      <button class="add-period-btn" onclick="addNewPeriod()">Добавить период</button>
+    </div>
+    
+    <div class="edit-controls" style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">
+      <label style="font-weight: normal;">
+        <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+        Выбрать все
+      </label>
+      <button class="reset-btn" onclick="resetSelected()" style="padding: 8px 16px;">Вернуть выбранные к оригиналу</button>
+      <button class="delete-btn" onclick="deleteSelected()" style="padding: 8px 16px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;">Удалить выбранные</button>
+      <span id="selectedCount" style="margin-left: 10px; color: #666;"></span>
+    </div>
+    
+    <div id="message"></div>
+    
+    <div style="overflow-x: auto;">
+      <table class="edit-table" id="editTable">
+        <thead>
+          <tr>
+            <th rowspan="2">☑</th>
+            <th rowspan="2">Дата</th>
+            <th rowspan="2">Время<br>(час)</th>
+            <th rowspan="2">T<br>°C</th>
+            <th rowspan="2">Pa<br>мм</th>
+            <th rowspan="2">U<br>%</th>
+            <th colspan="3">Ветер</th>
+            <th rowspan="2">N<br>%</th>
+            <th rowspan="2">WW</th>
+            <th rowspan="2">W1</th>
+            <th rowspan="2">W2</th>
+            <th rowspan="2">Tn<br>°C</th>
+            <th rowspan="2">Tx<br>°C</th>
+            <th rowspan="2">VV<br>км</th>
+            <th rowspan="2">Td<br>°C</th>
+            <th colspan="2">Осадки</th>
+            <th rowspan="2">sss<br>см</th>
+            <th rowspan="2">Действия</th>
+          </tr>
+          <tr>
+            <th>Напр</th>
+            <th>Ff<br>м/с</th>
+            <th>ff10<br>м/с</th>
+            <th>RRR<br>мм</th>
+            <th>tR<br>ч</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <% if (rows && rows.length > 0) { %>
+            <% rows.forEach(row => { %>
+              <tr data-date="<%= row.date %>" data-time="<%= row.time %>">
+                <td><input type="checkbox" class="row-checkbox" onchange="updateSelectedCount()"></td>
+                <td class="date-cell"><input type="text" name="date" value="<%= row.date %>" style="width: 100px;"></td>
+                <td class="time-cell"><input type="text" name="time" value="<%= row.time %>" style="width: 50px;"></td>
+                <td><input type="text" name="T" value="<%= row.T != null ? row.T : '' %>"></td>
+                <td><input type="text" name="Pa" value="<%= row.Pa != null ? row.Pa : '' %>"></td>
+                <td><input type="text" name="U" value="<%= row.U != null ? row.U : '' %>"></td>
+                <td><input type="text" name="windDir" value="<%= row.windDir || '' %>"></td>
+                <td><input type="text" name="Ff" value="<%= row.Ff != null ? row.Ff : '' %>"></td>
+                <td><input type="text" name="ff10" value="<%= row.ff10 != null ? row.ff10 : '' %>"></td>
+                <td><input type="text" name="N" value="<%= row.N != null ? row.N : '' %>"></td>
+                <td><input type="text" name="WW" value="<%= row.WW || '' %>" style="width: 150px;"></td>
+                <td><input type="text" name="W1" value="<%= row.W1 || '' %>" style="width: 120px;"></td>
+                <td><input type="text" name="W2" value="<%= row.W2 || '' %>" style="width: 120px;"></td>
+                <td><input type="text" name="Tn" value="<%= row.Tn != null ? row.Tn : '' %>"></td>
+                <td><input type="text" name="Tx" value="<%= row.Tx != null ? row.Tx : '' %>"></td>
+                <td><input type="text" name="VV" value="<%= row.VV != null ? row.VV : '' %>"></td>
+                <td><input type="text" name="Td" value="<%= row.Td != null ? row.Td : '' %>"></td>
+                <td><input type="text" name="RRR" value="<%= row.RRR != null ? row.RRR : '' %>"></td>
+                <td><input type="text" name="tR" value="<%= row.tR != null ? row.tR : '' %>"></td>
+                <td><input type="text" name="sss" value="<%= row.sss != null ? row.sss : '' %>"></td>
+                <td class="action-buttons">
+                  <button class="reset-btn" onclick="resetPeriod(this)" title="Вернуть период к оригиналу">↺</button>
+                  <button class="delete-btn" onclick="deletePeriod(this)" title="Удалить период">✕</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="20">Нет данных. Выберите город, дату и период, затем нажмите "Загрузить".</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function loadData() {
+      const cityId = document.getElementById('cityId').value;
+      const endDate = document.getElementById('endDate').value;
+      const period = document.getElementById('periodDays').value;
+      const hour = document.getElementById('hourSelect').value;
+      
+      if (!cityId || !endDate) {
+        showMessage('Укажите ID города и дату', 'error');
+        return;
+      }
+      
+      window.location.href = `/archive/edit?id=${cityId}&date=${endDate}&period=${period}&hour=${hour}&auth=true`;
+    }
+    
+    function toggleSelectAll(checkbox) {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      checkboxes.forEach(cb => cb.checked = checkbox.checked);
+      updateSelectedCount();
+    }
+    
+    function updateSelectedCount() {
+      const checked = document.querySelectorAll('.row-checkbox:checked').length;
+      const total = document.querySelectorAll('.row-checkbox').length;
+      document.getElementById('selectedCount').textContent = checked > 0 ? `Выбрано: ${checked} из ${total}` : '';
+    }
+    
+    function resetSelected() {
+      const cityId = document.getElementById('cityId').value;
+      const selected = document.querySelectorAll('.row-checkbox:checked');
+      
+      if (selected.length === 0) {
+        showMessage('Выберите периоды для возврата к оригиналу', 'error');
+        return;
+      }
+      
+      if (!confirm(`Вернуть ${selected.length} периодов к оригиналу?`)) {
+        return;
+      }
+      
+      const deletions = [];
+      selected.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const date = row.querySelector('input[name="date"]').value;
+        const time = row.querySelector('input[name="time"]').value;
+        deletions.push(`${cityId}_${date}_${time}`);
+      });
+      
+      fetch('/archive/edit/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edits: {}, deletions })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showMessage(`${deletions.length} периодов возвращены к оригиналу. Перезагрузка...`, 'success');
+          setTimeout(() => loadData(), 1500);
+        } else {
+          showMessage('Ошибка: ' + data.error, 'error');
+        }
+      })
+      .catch(err => showMessage('Ошибка сети: ' + err.message, 'error'));
+    }
+    
+    function deleteSelected() {
+      const cityId = document.getElementById('cityId').value;
+      const selected = document.querySelectorAll('.row-checkbox:checked');
+      
+      if (selected.length === 0) {
+        showMessage('Выберите периоды для удаления', 'error');
+        return;
+      }
+      
+      if (!confirm(`Удалить ${selected.length} периодов?`)) {
+        return;
+      }
+      
+      const deletions = [];
+      selected.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const date = row.querySelector('input[name="date"]').value;
+        const time = row.querySelector('input[name="time"]').value;
+        deletions.push(`${cityId}_${date}_${time}`);
+      });
+      
+      fetch('/archive/edit/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edits: {}, deletions })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showMessage(`${deletions.length} периодов удалены. Перезагрузка...`, 'success');
+          setTimeout(() => loadData(), 1500);
+        } else {
+          showMessage('Ошибка: ' + data.error, 'error');
+        }
+      })
+      .catch(err => showMessage('Ошибка сети: ' + err.message, 'error'));
+    }
+    
+    function addNewPeriod() {
+      const tbody = document.getElementById('tableBody');
+      const endDate = document.getElementById('endDate').value; // Берём дату из формы!
+      const currentHour = new Date().getHours();
+      const targetHour = Math.floor(currentHour / 3) * 3; // Ближайший целевой час
+      
+      const newRow = document.createElement('tr');
+      newRow.setAttribute('data-date', endDate);
+      newRow.setAttribute('data-time', String(targetHour).padStart(2, '0'));
+      newRow.innerHTML = `
+        <td><input type="checkbox" class="row-checkbox" onchange="updateSelectedCount()"></td>
+        <td class="date-cell"><input type="text" name="date" value="${endDate}" style="width: 100px;"></td>
+        <td class="time-cell"><input type="text" name="time" value="${String(targetHour).padStart(2, '0')}" style="width: 50px;"></td>
+        <td><input type="text" name="T" value=""></td>
+        <td><input type="text" name="Pa" value=""></td>
+        <td><input type="text" name="U" value=""></td>
+        <td><input type="text" name="windDir" value=""></td>
+        <td><input type="text" name="Ff" value=""></td>
+        <td><input type="text" name="ff10" value=""></td>
+        <td><input type="text" name="N" value=""></td>
+        <td><input type="text" name="WW" value="" style="width: 150px;"></td>
+        <td><input type="text" name="W1" value="" style="width: 120px;"></td>
+        <td><input type="text" name="W2" value="" style="width: 120px;"></td>
+        <td><input type="text" name="Tn" value=""></td>
+        <td><input type="text" name="Tx" value=""></td>
+        <td><input type="text" name="VV" value=""></td>
+        <td><input type="text" name="Td" value=""></td>
+        <td><input type="text" name="RRR" value=""></td>
+        <td><input type="text" name="tR" value=""></td>
+        <td><input type="text" name="sss" value=""></td>
+        <td class="action-buttons">
+          <button class="reset-btn" onclick="resetPeriod(this)" title="Вернуть период к оригиналу">↺</button>
+          <button class="delete-btn" onclick="deletePeriod(this)" title="Удалить период">✕</button>
+        </td>
+      `;
+      
+      tbody.insertBefore(newRow, tbody.firstChild);
+      showMessage('Новый период добавлен. Заполните данные и нажмите "Сохранить изменения"', 'success');
+    }
+    
+    function resetPeriod(btn) {
+      const row = btn.closest('tr');
+      const date = row.querySelector('input[name="date"]').value;
+      const time = row.querySelector('input[name="time"]').value;
+      const cityId = document.getElementById('cityId').value;
+      
+      if (!confirm(`Вернуть период ${date} ${time}:00 к оригинальным значениям?`)) {
+        return;
+      }
+      
+      const key = `${cityId}_${date}_${time}`;
+      
+      fetch('/archive/edit/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edits: {}, deletions: [key] })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('Период возвращён к оригиналу. Перезагрузите страницу.', 'success');
+          setTimeout(() => loadData(), 1500);
+        } else {
+          showMessage('Ошибка: ' + data.error, 'error');
+        }
+      })
+      .catch(err => showMessage('Ошибка сети: ' + err.message, 'error'));
+    }
+    
+    function deletePeriod(btn) {
+      const row = btn.closest('tr');
+      const date = row.querySelector('input[name="date"]').value;
+      const time = row.querySelector('input[name="time"]').value;
+      const cityId = document.getElementById('cityId').value;
+      
+      if (!confirm(`Удалить период ${date} ${time}:00?`)) {
+        return;
+      }
+      
+      const key = `${cityId}_${date}_${time}`;
+      
+      // Удаляем из JSON файла
+      fetch('/archive/edit/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edits: {}, deletions: [key] })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          row.remove();
+          showMessage('Период удалён. Перезагрузите страницу.', 'success');
+          setTimeout(() => loadData(), 1500);
+        } else {
+          showMessage('Ошибка: ' + data.error, 'error');
+        }
+      })
+      .catch(err => showMessage('Ошибка сети: ' + err.message, 'error'));
+    }
+    
+    function saveEdits() {
+      const cityId = document.getElementById('cityId').value;
+      const rows = document.querySelectorAll('#tableBody tr');
+      const edits = {};
+      
+      rows.forEach(row => {
+        const date = row.querySelector('input[name="date"]').value;
+        const time = row.querySelector('input[name="time"]').value;
+        
+        if (!date || !time) return;
+        
+        const key = `${cityId}_${date}_${time}`;
+        const rowData = { date, time };
+        
+        // Собираем все поля
+        const fields = ['T', 'Pa', 'U', 'windDir', 'Ff', 'ff10', 'N', 'WW', 'W1', 'W2', 'Tn', 'Tx', 'VV', 'Td', 'RRR', 'tR', 'sss'];
+        fields.forEach(field => {
+          const input = row.querySelector(`input[name="${field}"]`);
+          if (input) {
+            const value = input.value.trim();
+            // Пустое значение = null (удаление)
+            if (value === '') {
+              rowData[field] = null;
+            } else {
+              // Пробуем преобразовать в число
+              const num = parseFloat(value);
+              rowData[field] = isNaN(num) ? value : num;
+            }
+          }
+        });
+        
+        edits[key] = rowData;
+      });
+      
+      fetch('/archive/edit/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edits, deletions: [] })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          showMessage('Изменения сохранены успешно!', 'success');
+          setTimeout(() => loadData(), 1500);
+        } else {
+          showMessage('Ошибка: ' + data.error, 'error');
+        }
+      })
+      .catch(err => showMessage('Ошибка сети: ' + err.message, 'error'));
+    }
+    
+    function showMessage(text, type) {
+      const msgDiv = document.getElementById('message');
+      msgDiv.textContent = text;
+      msgDiv.className = 'message ' + type;
+      setTimeout(() => msgDiv.textContent = '', 5000);
+    }
+    
+    // Отслеживание изменений в ячейках
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('.edit-table input');
+      inputs.forEach(input => {
+        const originalValue = input.value;
+        input.addEventListener('input', function() {
+          if (this.value !== originalValue) {
+            this.closest('td').classList.add('edited');
+          } else {
+            this.closest('td').classList.remove('edited');
+          }
+        });
+      });
+    });
+  </script>
+<% } %>
+
+</body>
+</html>
