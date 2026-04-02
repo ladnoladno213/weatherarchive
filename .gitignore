@@ -5,6 +5,10 @@ chrome-win64/
 chromedriver-win64/
 data/alternateNamesV2.txt
 
+# RP5 realtime data (managed by GitHub Actions)
+data/rp5-realtime/*.csv
+data/rp5-realtime/README.md
+
 # Node modules
 node_modules/
 
