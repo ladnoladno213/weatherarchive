@@ -1,0 +1,29 @@
+name: Deploy to Render
+
+on:
+  # Автоматический деплой при push в main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'data/rp5-realtime/**'
+      - '*.md'
+      - '.gitignore'
+  
+  # Ручной запуск
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK }}" ]; then
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+            echo "✅ Deploy triggered on Render"
+          else
+            echo "⚠️ RENDER_DEPLOY_HOOK secret not set"
+            echo "Add it in: Settings → Secrets → Actions → New repository secret"
+          fi
