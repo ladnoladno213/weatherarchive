@@ -17,19 +17,25 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
       - name: Install dependencies
         run: |
-          pip install selenium requests
+          pip install selenium requests webdriver-manager
       
       - name: Setup Chrome and ChromeDriver
         uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
           install-chromedriver: true
+      
+      - name: Verify Chrome and ChromeDriver
+        run: |
+          google-chrome --version
+          chromedriver --version
+          which chromedriver
       
       - name: Download RP5 data
         run: |

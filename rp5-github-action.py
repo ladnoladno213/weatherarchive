@@ -17,6 +17,13 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+# Пробуем импортировать webdriver-manager
+try:
+    from webdriver_manager.chrome import ChromeDriverManager
+    HAS_WEBDRIVER_MANAGER = True
+except ImportError:
+    HAS_WEBDRIVER_MANAGER = False
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -39,7 +46,18 @@ def download_station(station_id, start_date, end_date, output_dir='data/rp5-csv'
     options.add_argument('--disable-blink-features=AutomationControlled')
     options.add_argument('--window-size=1920,1080')
     
-    driver = webdriver.Chrome(options=options)
+    # Пробуем создать драйвер с webdriver-manager или системным ChromeDriver
+    try:
+        if HAS_WEBDRIVER_MANAGER:
+            logger.info("Using webdriver-manager to setup ChromeDriver")
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=options)
+        else:
+            logger.info("Using system ChromeDriver")
+            driver = webdriver.Chrome(options=options)
+    except Exception as e:
+        logger.error(f"Failed to initialize Chrome: {e}")
+        raise
     
     try:
         logger.info(f"Скачивание станции {station_id}: {start_date} - {end_date}")
