@@ -22,7 +22,31 @@ async function getLocationByIP(ip) {
   };
 }
 
-const GEONAMES_USER = 'vvvholder';
+const GEONAMES_USER = process.env.GEONAMES_USER || 'vvvholder';
+
+// Глобальный кэш для всех GeoNames запросов (экономим API лимиты)
+const _geonamesCache = new Map();
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 часа
+
+// Кэшированный fetch для GeoNames
+async function cachedGeonamesFetch(url) {
+  const cached = _geonamesCache.get(url);
+  if (cached && Date.now() - cached.time < CACHE_TTL) {
+    return cached.data;
+  }
+  
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    _geonamesCache.set(url, { data, time: Date.now() });
+    return data;
+  } catch (error) {
+    console.error('GeoNames API error:', error);
+    // Возвращаем кэшированные данные даже если устарели
+    if (cached) return cached.data;
+    throw error;
+  }
+}
 
 // Кэш для getJSON запросов ADM1 (экономим rate limit)
 const _admCache = new Map();
@@ -32,9 +56,9 @@ async function _getAdminName(entry, cityNameLow) {
   const geonameId = entry.geonameId;
   if (!_admCache.has(geonameId)) {
     try {
-      const d = await fetch(
+      const d = await cachedGeonamesFetch(
         'http://api.geonames.org/getJSON?geonameId=' + geonameId + '&username=' + GEONAMES_USER + '&lang=ru'
-      ).then(r => r.json());
+      );
       _admCache.set(geonameId, {
         name: d.name || entry.name || '',
         ruAlts: (d.alternateNames || []).filter(a => a.lang === 'ru').map(a => a.name),
@@ -82,10 +106,10 @@ async function getCityHierarchy(lat, lon) {
   if (_hierCache.has(key)) return _hierCache.get(key);
   const empty = { cityName: '', countryCode: '', stateCode: '', admin1: '', admin2: '', admin3: '', admin4: '' };
   try {
-    const nearby = await fetch(
+    const nearby = await cachedGeonamesFetch(
     'http://api.geonames.org/findNearbyPlaceNameJSON?lat=' + lat + '&lng=' + lon +
     '&username=' + GEONAMES_USER + '&lang=ru&maxRows=1&style=SHORT'
-  ).then(r => r.json());
+  );
 
   const place = nearby.geonames && nearby.geonames[0];
   if (!place) return { cityName: '', countryCode: '', stateCode: '', admin1: '', admin2: '', admin3: '', admin4: '' };
@@ -94,10 +118,10 @@ async function getCityHierarchy(lat, lon) {
   const cityNameLow = cityName.toLowerCase();
   const cityIsCyril = _hasCyrillic(cityName);
 
-  const h = await fetch(
+  const h = await cachedGeonamesFetch(
     'http://api.geonames.org/hierarchyJSON?geonameId=' + place.geonameId +
     '&username=' + GEONAMES_USER + '&lang=ru'
-  ).then(r => r.json());
+  );
 
   const adm = (h.geonames || [])
     .filter(g => g.fcode && /^ADM[1-4]$/.test(g.fcode))

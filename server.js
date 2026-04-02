@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const { getWeatherData, searchCity, getCountries, getRegions, getRegionsLocalized, getCities, getCitiesLocalized, toSlug, countrySlug, regionSlug, getTargetHours } = require('./weather');
 const geoDB = require('./data/geo-db');
 const regionsGn = require('./locales/regions-gn');
@@ -10,13 +11,25 @@ const { getAirportById, getAirportByICAO, findNearestAirport, findNearestAirport
 const { loadRP5CSV } = require('./rp5-csv-loader');
 const { getRP5CSVPath } = require('./rp5-csv-downloader');
 
-const GEONAMES_USER = 'vvvholder';
+const GEONAMES_USER = process.env.GEONAMES_USER || 'vvvholder';
 
 // Простой пароль для доступа к редактированию (в production использовать переменные окружения)
 const EDIT_PASSWORD = process.env.EDIT_PASSWORD || 'admin123';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Rate limiting для защиты от ботов и экономии API лимитов
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 100, // максимум 100 запросов с одного IP
+  message: 'Слишком много запросов с вашего IP. Попробуйте через 15 минут.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Применяем rate limiting ко всем запросам
+app.use(limiter);
 
 // Middleware для парсинга JSON
 app.use(express.json());
