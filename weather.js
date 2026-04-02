@@ -104,67 +104,43 @@ const _hierCache = new Map();
 async function getCityHierarchy(lat, lon) {
   const key = `${Math.round(lat * 100) / 100},${Math.round(lon * 100) / 100}`;
   if (_hierCache.has(key)) return _hierCache.get(key);
-  const empty = { cityName: '', countryCode: '', stateCode: '', admin1: '', admin2: '', admin3: '', admin4: '' };
-  try {
-    const nearby = await cachedGeonamesFetch(
-    'http://api.geonames.org/findNearbyPlaceNameJSON?lat=' + lat + '&lng=' + lon +
-    '&username=' + GEONAMES_USER + '&lang=ru&maxRows=1&style=SHORT'
-  );
-
-  const place = nearby.geonames && nearby.geonames[0];
-  if (!place) return { cityName: '', countryCode: '', stateCode: '', admin1: '', admin2: '', admin3: '', admin4: '' };
-
-  const cityName    = place.name || '';
-  const cityNameLow = cityName.toLowerCase();
-  const cityIsCyril = _hasCyrillic(cityName);
-
-  const h = await cachedGeonamesFetch(
-    'http://api.geonames.org/hierarchyJSON?geonameId=' + place.geonameId +
-    '&username=' + GEONAMES_USER + '&lang=ru'
-  );
-
-  const adm = (h.geonames || [])
-    .filter(g => g.fcode && /^ADM[1-4]$/.test(g.fcode))
-    .sort((a, b) => a.fcode.localeCompare(b.fcode));
-
-  // country_code из иерархии (PCLI уровень)
-  const pcli = (h.geonames || []).find(g => g.fcode === 'PCLI');
-  const countryCode = pcli?.countryCode || place.countryCode || '';
-
-  // stateCode из ADM1 (ISO3166-2 код, напр. TYU для Тюменской области)
-  const adm1Entry = adm.find(g => g.fcode === 'ADM1');
-  const stateCode = adm1Entry?.adminCodes1?.ISO3166_2 || adm1Entry?.adminCode1 || '';
-
-  const admins = [];
-  for (const entry of adm) {
-    // getJSON только для ADM1 — самый важный уровень
-    let name = entry.fcode === 'ADM1'
-      ? await _getAdminName(entry, cityNameLow)
-      : (entry.name || '');
-
-    if (!name) continue;
-    if (name.toLowerCase() === cityNameLow) continue;
-    if (cityIsCyril && _hasLatin(name) && !_hasCyrillic(name)) continue;
-    // Убираем "ГородскийРайон" (напр. "Новосибирский Район" для Новосибирска)
-    const cityBase = cityNameLow.replace(/[ьъ]$/, '').replace(/ск(ий|ого|ому|им|ом)$/i, '');
-    const nameBase = name.toLowerCase().replace(/[ьъ]$/, '').replace(/ск(ий|ого|ому|им|ом)$/i, '');
-    if (nameBase.includes(cityBase) && /район|district/i.test(name)) continue;
-
-    admins.push(name);
-  }
-
-  const result = {
-    cityName,
-    countryCode,
-    stateCode,
-    admin1: admins[0] || '',
-    admin2: admins[1] || '',
-    admin3: admins[2] || '',
-    admin4: admins[3] || '',
+  
+  const empty = { 
+    cityName: '', 
+    countryCode: '', 
+    stateCode: '', 
+    admin1: '', 
+    admin2: '', 
+    admin3: '', 
+    admin4: '' 
   };
-  _hierCache.set(key, result);
-  return result;
-  } catch {
+  
+  try {
+    // Используем локальную базу вместо GeoNames API
+    const nearbyList = geoDB.findNearest(lat, lon, 1, 50);
+    
+    if (!nearbyList || nearbyList.length === 0) {
+      console.log(`No nearby city found for ${lat}, ${lon}`);
+      return empty;
+    }
+    
+    const nearbyCity = nearbyList[0];
+    
+    const result = {
+      cityName: nearbyCity.nameRu || nearbyCity.name,
+      countryCode: nearbyCity.cc || '',
+      stateCode: nearbyCity.adm1 || '',
+      admin1: '', // Можно добавить mapping для регионов позже
+      admin2: '',
+      admin3: '',
+      admin4: '',
+    };
+    
+    _hierCache.set(key, result);
+    return result;
+    
+  } catch (error) {
+    console.error('Error in getCityHierarchy:', error);
     return empty;
   }
 }
