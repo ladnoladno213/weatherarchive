@@ -17,7 +17,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 # Импортируем функции из rp5-realtime-updater
-from rp5_realtime_updater import main as update_rp5, logger
+try:
+    import rp5_realtime_updater
+    from rp5_realtime_updater import main as update_rp5, logger
+except ImportError:
+    # Если не получается импортировать как модуль, импортируем напрямую
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("rp5_realtime_updater", "rp5-realtime-updater.py")
+    rp5_realtime_updater = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rp5_realtime_updater)
+    update_rp5 = rp5_realtime_updater.main
+    logger = rp5_realtime_updater.logger
 
 
 def git_push():

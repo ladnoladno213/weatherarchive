@@ -89,50 +89,76 @@ def download_station_quick(station_id, start_date, end_date, output_dir='data/rp
     try:
         logger.info(f"Станция {station_id}")
         
+        # 1. Открываем страницу архива
         url = f'https://rp5.ru/archive.php?wmo_id={station_id}&lang=ru'
         driver.get(url)
-        time.sleep(3)  # Уменьшили ожидание
+        time.sleep(5)
         
+        # 2. СТРОГО: Переключаемся на вкладку "Скачать архив погоды"
+        logger.info("Шаг 1: Переключаемся на вкладку 'Скачать архив погоды'")
         download_tab = driver.find_element(By.ID, 'tabSynopDLoad')
         download_tab.click()
-        time.sleep(2)
+        time.sleep(3)
         
+        # 3. СТРОГО: Заполняем диапазон дат (строка 1)
+        logger.info(f"Шаг 2: Заполняем диапазон дат: {start_date} - {end_date}")
         driver.execute_script(f"""
             document.getElementById('calender_dload').value = '{start_date}';
             document.getElementById('calender_dload2').value = '{end_date}';
         """)
-        time.sleep(1)
+        time.sleep(2)
         
+        # Строка 2 "все дни" уже выбрана по умолчанию, пропускаем
+        
+        # 4. СТРОГО: Выбираем формат CSV (строка 3)
+        logger.info("Шаг 3: Выбираем формат CSV")
         driver.execute_script("""
             var csvRadio = document.querySelector('input[name="format"][value="f_csv"]');
-            if (csvRadio) csvRadio.click();
+            if (csvRadio) {
+                csvRadio.click();
+                console.log('CSV format selected');
+            }
+        """)
+        time.sleep(3)
+        
+        # 5. СТРОГО: Выбираем кодировку UTF-8 (строка 4)
+        logger.info("Шаг 4: Выбираем кодировку UTF-8")
+        driver.execute_script("""
+            var utf8Radio = document.getElementById('coding2');
+            if (utf8Radio) {
+                utf8Radio.click();
+                console.log('UTF-8 encoding selected');
+            }
         """)
         time.sleep(2)
         
-        driver.execute_script("""
-            var utf8Radio = document.getElementById('coding2');
-            if (utf8Radio) utf8Radio.click();
-        """)
-        time.sleep(1)
-        
+        # 6. СТРОГО: Нажимаем кнопку "Выбрать в файл GZ" (строка 5)
+        logger.info("Шаг 5: Нажимаем 'Выбрать в файл GZ'")
         driver.execute_script("""
             var buttons = document.querySelectorAll('.archButton');
             for (var i = 0; i < buttons.length; i++) {
                 var text = buttons[i].textContent || '';
                 if (text.includes('Выбрать') && text.includes('файл')) {
                     buttons[i].click();
+                    console.log('Download button clicked');
                     break;
                 }
             }
         """)
-        time.sleep(5)
+        time.sleep(7)
         
+        # 7. Получаем URL для скачивания (появляется текст "Скачать")
+        logger.info("Шаг 6: Получаем ссылку для скачивания")
         download_url = driver.execute_script("""
             var resultSpan = document.getElementById('f_result');
             if (resultSpan) {
                 var link = resultSpan.querySelector('a');
-                if (link) return link.href;
+                if (link) {
+                    console.log('Download link found:', link.href);
+                    return link.href;
+                }
             }
+            console.log('Download link not found');
             return null;
         """)
         
@@ -140,9 +166,14 @@ def download_station_quick(station_id, start_date, end_date, output_dir='data/rp
             logger.warning(f"Станция {station_id}: URL не найден")
             return False
         
-        # Ждем генерации (для свежих данных быстрее)
+        logger.info(f"URL получен: {download_url}")
+        
+        # 8. Ждем генерации файла
+        logger.info("Ожидание генерации файла (15 сек)...")
         time.sleep(15)
         
+        # 9. Скачиваем файл
+        logger.info("Скачивание файла...")
         response = requests.get(download_url, timeout=60)
         
         if response.status_code == 200:
@@ -165,6 +196,8 @@ def download_station_quick(station_id, start_date, end_date, output_dir='data/rp
             
     except Exception as e:
         logger.error(f"Станция {station_id}: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return False
     finally:
         driver.quit()
