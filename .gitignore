@@ -1,7 +1,8 @@
 # Large files (exceeding GitHub 100MB limit)
 WeatherWebsite.rar
-chrome-win64 (1).zip
+*.zip
 chrome-win64/
+chromedriver-win64/
 data/alternateNamesV2.txt
 
 # Node modules
@@ -26,3 +27,17 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+*.bak
+
+# Test and debug files
+test-*.js
+test-*.py
+debug-*.py
+debug-*.txt
+*-debug.html
+*-debug.txt
+
+# Analysis and backup files
+*-analysis.txt
+*-analysis.json
+indexbackup*.ejs
