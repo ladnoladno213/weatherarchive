@@ -1,73 +1,105 @@
-# Инструкция по запуску GitHub Actions
+# GitHub Actions - Инструкция
 
-## ✅ Все исправления выполнены
+## Настроенные Workflows
 
-### Что было исправлено:
+### 1. RP5 Frequent Updates (rp5-frequent.yml)
+**Статус**: ✅ Работает
 
-1. **Скрипт `rp5-github-updater.py`**
-   - Корректно парсит `data/wmo-mapping.js` с помощью регулярных выражений
-   - Фильтрует значения '0' (нет данных)
-   - Загружает 10052 уникальных станций
-   - Создаёт placeholder CSV файлы в `data/rp5-realtime/`
+**Что делает**: Обновляет данные о погоде каждые 3 часа из RP5
 
-2. **Workflow `.github/workflows/rp5-frequent.yml`**
-   - Исправлена логика git commit (использует `if ! git diff --staged --quiet`)
-   - Правильно обрабатывает новые файлы
+**Расписание**: Каждые 3 часа (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC)
 
-3. **Конфигурация `.gitignore`**
-   - CSV файлы в `data/rp5-realtime/` игнорируются локально
-   - Управляются только через GitHub Actions
+**Файлы**:
+- Workflow: `.github/workflows/rp5-frequent.yml`
+- Скрипт: `rp5-github-updater.py`
 
-## 🚀 Как запустить workflow вручную
-
-### Вариант 1: Через веб-интерфейс GitHub (рекомендуется)
-
-1. Откройте: https://github.com/ladnoladno213/weatherarchive/actions/workflows/rp5-frequent.yml
-2. Нажмите кнопку **"Run workflow"** (справа)
-3. Выберите ветку **main**
-4. Нажмите **"Run workflow"**
-5. Подождите 1-2 минуты и обновите страницу
-
-### Вариант 2: Через скрипт
-
-```bash
-python trigger-github-workflow.py
-```
-
-Потребуется Personal Access Token с правами `repo` и `workflow`.
-
-## 📊 Проверка статуса
-
-### Через веб-интерфейс
-https://github.com/ladnoladno213/weatherarchive/actions
-
-### Через скрипт
-```bash
-python check-latest-run.py
-```
-
-## 📅 Автоматический запуск
-
-Workflow запускается автоматически каждые 3 часа:
-- 00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 (Екатеринбург)
-- 19:00, 22:00, 01:00, 04:00, 07:00, 10:00, 13:00, 16:00 (UTC)
-
-## 🔍 История запусков
-
-- Запуск #4: 2026-04-02 ~07:55 UTC - ✅ SUCCESS (все исправления работают!)
-- Запуск #3: 2026-04-02 ~07:50 UTC - ❌ FAILED (git commit error - исправлено)
-- Запуск #2: 2026-04-02 02:43:14 UTC - ❌ FAILED (парсинг wmo-mapping.js - исправлено)
-- Запуск #1: 2026-04-02 02:40:08 UTC - ❌ FAILED (парсинг wmo-mapping.js - исправлено)
-
-## ✨ Что дальше?
-
-После успешного запуска workflow:
-1. Данные будут обновляться автоматически каждые 3 часа
-2. Коммиты будут создаваться автоматически при наличии изменений
-3. Файлы будут сохраняться в `data/rp5-realtime/*.csv`
-4. Локально эти файлы игнорируются (управляются только через GitHub Actions)
+**Последнее исправление**: Исправлен парсинг `data/wmo-mapping.js` (использует regex вместо JSON)
 
 ---
 
-**Последнее обновление:** 2026-04-02 07:58 UTC  
-**Статус:** ✅ Workflow работает корректно!
+### 2. Download RP5 Weather Data (download-rp5.yml)
+**Статус**: ✅ Исправлено
+
+**Что делает**: Скачивает архивные данные погоды с RP5 через Selenium
+
+**Расписание**: 1-го числа каждого месяца в 03:00 UTC
+
+**Файлы**:
+- Workflow: `.github/workflows/download-rp5.yml`
+- Скрипт: `rp5-github-action.py`
+
+**Последнее исправление**: Упрощена установка ChromeDriver (используется `install-chromedriver: true` в browser-actions/setup-chrome)
+
+**Проблема была**: Старый метод установки ChromeDriver через wget больше не работал
+
+**Решение**: Используем встроенную установку ChromeDriver в action `browser-actions/setup-chrome@latest`
+
+---
+
+## Как запустить вручную
+
+1. Перейдите на страницу Actions: https://github.com/ВАШ_USERNAME/weatherarchive/actions
+2. Выберите нужный workflow слева
+3. Нажмите "Run workflow" справа
+4. Выберите ветку (обычно `main`)
+5. Нажмите зеленую кнопку "Run workflow"
+
+---
+
+## Как проверить статус
+
+### Через веб-интерфейс
+https://github.com/ВАШ_USERNAME/weatherarchive/actions
+
+### Через скрипты
+```bash
+# Проверить последние запуски
+python check-github-actions.py
+
+# Проверить логи конкретного запуска
+python check-github-logs.py
+
+# Проверить самый последний запуск
+python check-latest-run.py
+```
+
+---
+
+## Настройка станций для скачивания
+
+Отредактируйте файл `rp5-github-action.py`:
+
+```python
+stations = [
+    ('28573', '01.01.2016', '31.03.2026'),  # Ишим
+    ('26063', '01.01.2020', '31.03.2026'),  # Другая станция
+    # Добавьте свои станции здесь
+]
+```
+
+Формат: `(WMO_ID, дата_начала, дата_окончания)`
+
+---
+
+## Troubleshooting
+
+### Workflow падает с ошибкой "exit code 5"
+- Проверьте, что ChromeDriver установлен правильно
+- Убедитесь, что используется `install-chromedriver: true`
+
+### Не скачиваются данные
+- Проверьте, что WMO ID правильный
+- Убедитесь, что даты в формате DD.MM.YYYY
+- Проверьте логи workflow
+
+### Изменения не коммитятся
+- Убедитесь, что файлы действительно изменились
+- Проверьте права доступа GitHub Action (Settings → Actions → General → Workflow permissions)
+
+---
+
+## История исправлений
+
+**02.04.2026**
+- ✅ Исправлен workflow download-rp5.yml (ChromeDriver installation)
+- ✅ Исправлен workflow rp5-frequent.yml (парсинг wmo-mapping.js)
