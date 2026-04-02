@@ -8,6 +8,7 @@ RP5 GitHub Actions Updater
 import os
 import sys
 import json
+import re
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -37,41 +38,29 @@ def load_stations_list():
         mapping_file = Path('data/wmo-mapping.js')
         if not mapping_file.exists():
             logger.error(f"Файл не найден: {mapping_file}")
-            logger.info("Текущая директория: " + os.getcwd())
-            logger.info("Содержимое директории:")
-            for item in Path('.').iterdir():
-                logger.info(f"  {item}")
             return []
         
         with open(mapping_file, 'r', encoding='utf-8') as f:
             content = f.read()
             logger.info(f"Прочитано {len(content)} символов из файла")
             
-            # Ищем JSON объект
-            json_start = content.find('{')
-            json_end = content.rfind('}') + 1
+            # Используем регулярное выражение для извлечения всех WMO ID (значений в кавычках)
+            # Формат: число: 'WMO_ID',
+            pattern = r":\s*'(\d+)'"
+            matches = re.findall(pattern, content)
             
-            if json_start == -1 or json_end == 0:
-                logger.error("JSON объект не найден в файле")
+            if not matches:
+                logger.error("WMO ID не найдены в файле")
                 return []
             
-            json_str = content[json_start:json_end]
-            logger.info(f"Извлечено JSON: {len(json_str)} символов")
+            # Убираем '0' и дубликаты, сортируем
+            stations = sorted(set(m for m in matches if m != '0'))
             
-            mapping = json.loads(json_str)
-            logger.info(f"Распарсено {len(mapping)} записей")
+            logger.info(f"Загружено {len(stations)} уникальных станций (исключая '0')")
+            logger.info(f"Примеры станций: {stations[:10]}")
             
-            stations = set()
-            for city_id, wmo_id in mapping.items():
-                if wmo_id and wmo_id != '0' and wmo_id != 0:
-                    stations.add(str(wmo_id))
+            return stations
             
-            logger.info(f"Загружено {len(stations)} уникальных станций")
-            return sorted(list(stations))
-            
-    except json.JSONDecodeError as e:
-        logger.error(f"Ошибка парсинга JSON: {e}")
-        return []
     except Exception as e:
         logger.error(f"Ошибка загрузки списка станций: {e}")
         import traceback
