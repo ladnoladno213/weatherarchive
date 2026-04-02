@@ -25,20 +25,11 @@ jobs:
         run: |
           pip install selenium requests
       
-      - name: Setup Chrome
+      - name: Setup Chrome and ChromeDriver
         uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
-      
-      - name: Install ChromeDriver
-        run: |
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
-          wget -q https://storage.googleapis.com/chrome-for-testing-public/LATEST_RELEASE_${CHROME_VERSION}
-          CHROMEDRIVER_VERSION=$(cat LATEST_RELEASE_${CHROME_VERSION})
-          wget -q https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip
-          unzip -q chromedriver-linux64.zip
-          sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-          sudo chmod +x /usr/local/bin/chromedriver
+          install-chromedriver: true
       
       - name: Download RP5 data
         run: |
