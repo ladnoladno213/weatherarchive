@@ -10,6 +10,7 @@ import sys
 import time
 import gzip
 import json
+import re
 import logging
 import requests
 from datetime import datetime, timedelta
@@ -40,24 +41,38 @@ def get_date_range():
 def load_stations_list():
     """Загружает список станций из data/wmo-mapping.js"""
     try:
-        # Читаем файл с маппингом городов
-        with open('data/wmo-mapping.js', 'r', encoding='utf-8') as f:
+        # Проверяем существование файла
+        mapping_file = Path('data/wmo-mapping.js')
+        if not mapping_file.exists():
+            logger.error(f"Файл не найден: {mapping_file}")
+            return []
+        
+        with open(mapping_file, 'r', encoding='utf-8') as f:
             content = f.read()
-            # Извлекаем JSON из module.exports
-            json_start = content.find('{')
-            json_end = content.rfind('}') + 1
-            mapping = json.loads(content[json_start:json_end])
+            logger.info(f"Прочитано {len(content)} символов из файла")
             
-            # Получаем уникальные WMO ID
-            stations = set()
-            for city_id, wmo_id in mapping.items():
-                if wmo_id and wmo_id != '0':
-                    stations.add(wmo_id)
+            # Используем регулярное выражение для извлечения всех WMO ID
+            # Формат в файле: число: 'WMO_ID',
+            pattern = r":\s*'(\d+)'"
+            matches = re.findall(pattern, content)
             
-            logger.info(f"Загружено {len(stations)} уникальных станций")
-            return list(stations)
+            if not matches:
+                logger.error("WMO ID не найдены в файле")
+                logger.error(f"Первые 500 символов файла: {content[:500]}")
+                return []
+            
+            # Убираем '0' и дубликаты, сортируем
+            stations = sorted(set(m for m in matches if m != '0'))
+            
+            logger.info(f"Загружено {len(stations)} уникальных станций (исключая '0')")
+            logger.info(f"Примеры станций: {stations[:10]}")
+            
+            return stations
+            
     except Exception as e:
         logger.error(f"Ошибка загрузки списка станций: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return []
 
 
