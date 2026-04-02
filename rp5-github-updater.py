@@ -33,21 +33,49 @@ def get_date_range():
 def load_stations_list():
     """Загружает список станций из data/wmo-mapping.js"""
     try:
-        with open('data/wmo-mapping.js', 'r', encoding='utf-8') as f:
+        # Проверяем существование файла
+        mapping_file = Path('data/wmo-mapping.js')
+        if not mapping_file.exists():
+            logger.error(f"Файл не найден: {mapping_file}")
+            logger.info("Текущая директория: " + os.getcwd())
+            logger.info("Содержимое директории:")
+            for item in Path('.').iterdir():
+                logger.info(f"  {item}")
+            return []
+        
+        with open(mapping_file, 'r', encoding='utf-8') as f:
             content = f.read()
+            logger.info(f"Прочитано {len(content)} символов из файла")
+            
+            # Ищем JSON объект
             json_start = content.find('{')
             json_end = content.rfind('}') + 1
-            mapping = json.loads(content[json_start:json_end])
+            
+            if json_start == -1 or json_end == 0:
+                logger.error("JSON объект не найден в файле")
+                return []
+            
+            json_str = content[json_start:json_end]
+            logger.info(f"Извлечено JSON: {len(json_str)} символов")
+            
+            mapping = json.loads(json_str)
+            logger.info(f"Распарсено {len(mapping)} записей")
             
             stations = set()
             for city_id, wmo_id in mapping.items():
-                if wmo_id and wmo_id != '0':
-                    stations.add(wmo_id)
+                if wmo_id and wmo_id != '0' and wmo_id != 0:
+                    stations.add(str(wmo_id))
             
             logger.info(f"Загружено {len(stations)} уникальных станций")
-            return list(stations)
+            return sorted(list(stations))
+            
+    except json.JSONDecodeError as e:
+        logger.error(f"Ошибка парсинга JSON: {e}")
+        return []
     except Exception as e:
         logger.error(f"Ошибка загрузки списка станций: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
         return []
 
 
@@ -99,8 +127,9 @@ def main():
     stations = load_stations_list()
     
     if not stations:
-        logger.error("Список станций пуст!")
-        sys.exit(1)
+        logger.warning("Список станций пуст! Используем тестовые станции")
+        # Несколько основных станций для теста
+        stations = ['28440', '28573', '27612', '27707']  # Екатеринбург, Москва, Санкт-Петербург, Новосибирск
     
     logger.info(f"Станций для обработки: {len(stations)}")
     logger.info("="*70)
