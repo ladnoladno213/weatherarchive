@@ -1,53 +1,77 @@
-# Быстрый деплой на Railway.app
+# Railway - Быстрый деплой
 
-## Почему Railway вместо Render?
+## Шаг 1: Установите Railway GitHub App
 
-- ✅ Быстрый деплой (1-2 минуты)
-- ✅ Нет проблем с кэшированием
-- ✅ $5 бесплатных кредитов/месяц
-- ✅ Не "засыпает" как Render
-- ✅ Лучшие логи
+1. Откройте: https://github.com/apps/railway-app/installations/new
+2. Выберите свой аккаунт
+3. Выберите доступ к репозиториям:
+   - Либо "All repositories" (все репозитории)
+   - Либо "Only select repositories" и выберите `weatherarchive`
+4. Нажмите "Install"
 
-## Шаг 1: Регистрация (30 секунд)
+## Шаг 2: Создайте проект на Railway
 
-1. Откройте https://railway.app
-2. Нажмите "Start a New Project"
-3. Выберите "Login with GitHub"
-4. Авторизуйте Railway
+1. Откройте: https://railway.app/new
+2. Нажмите "Deploy from GitHub repo"
+3. Выберите репозиторий `weatherarchive`
+4. Railway автоматически обнаружит настройки из `railway.toml`
 
-## Шаг 2: Создание проекта (1 минута)
+## Шаг 3: Настройте переменные окружения (опционально)
 
-1. На главной странице нажмите "New Project"
-2. Выберите "Deploy from GitHub repo"
-3. Найдите `ladnoladno213/weatherarchive`
-4. Нажмите "Deploy Now"
+Railway автоматически установит `PORT`, но вы можете добавить:
 
-Railway автоматически:
-- Определит Node.js проект
-- Прочитает `railway.toml`
-- Установит зависимости
-- Запустит сервер
-
-## Шаг 3: Настройка переменных (опционально)
-
-Settings → Variables → Add Variable:
 ```
-EDIT_PASSWORD=ваш_пароль
 NODE_ENV=production
 ```
 
-## Шаг 4: Получить URL
+## Шаг 4: Деплой
 
-1. После деплоя нажмите на сервис
-2. Settings → Networking → Generate Domain
-3. Скопируйте URL (например: `weatherarchive-production.up.railway.app`)
+Railway автоматически:
+- Установит зависимости (`npm install`)
+- Запустит сервер (`npm start`)
+- Выделит публичный URL
 
-## Готово! 🎉
+## Проверка
 
-Ваш сайт работает на Railway без проблем с GeoNames API!
+После деплоя:
+1. Откройте выделенный URL (например, `https://weatherarchive-production.up.railway.app`)
+2. Проверьте, что сайт загружается
+3. Проверьте архив погоды и прогноз
 
----
+## Преимущества Railway
 
-**Время:** 3 минуты  
-**Стоимость:** $5 кредитов хватит на месяц  
-**Проблемы:** Нет, всё работает из коробки
+- ✅ Автоматический деплой при push в GitHub
+- ✅ Бесплатный план (500 часов/месяц)
+- ✅ Простая настройка
+- ✅ Поддержка Node.js из коробки
+- ✅ Автоматические SSL сертификаты
+
+## Troubleshooting
+
+### Railway не видит репозиторий
+- Убедитесь, что Railway GitHub App установлен
+- Проверьте, что приложению дан доступ к репозиторию
+- Попробуйте переустановить приложение
+
+### Деплой падает
+- Проверьте логи в Railway Dashboard
+- Убедитесь, что `package.json` содержит правильные скрипты
+- Проверьте, что все зависимости установлены
+
+### Сайт не открывается
+- Проверьте, что сервер слушает на `process.env.PORT`
+- Проверьте логи на ошибки
+- Убедитесь, что деплой завершился успешно
+
+## Альтернативы
+
+Если Railway не подходит, попробуйте:
+- **Render.com** - уже настроен (`render.yaml`)
+- **Vercel** - настроен (`vercel.json`)
+- **GitHub Pages** - НЕ подходит (нужен Node.js backend)
+
+## Полезные ссылки
+
+- Railway Dashboard: https://railway.app/dashboard
+- Railway Docs: https://docs.railway.app/
+- GitHub App Settings: https://github.com/settings/installations
