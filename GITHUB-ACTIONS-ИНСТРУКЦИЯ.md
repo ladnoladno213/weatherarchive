@@ -20,23 +20,26 @@
 ### 2. Download RP5 Weather Data (download-rp5.yml)
 **Статус**: ✅ Исправлено
 
-**Что делает**: Скачивает архивные данные погоды с RP5 через Selenium
+**Что делает**: Скачивает архивные данные погоды с RP5 через прямые ссылки
 
 **Расписание**: 1-го числа каждого месяца в 03:00 UTC
 
 **Файлы**:
 - Workflow: `.github/workflows/download-rp5.yml`
-- Скрипт: `rp5-github-action.py`
+- Скрипт: `rp5-github-downloader.js`
+- Библиотека: `rp5-archive-downloader.js`
 
 **Последнее исправление**: 
-1. Упрощена установка ChromeDriver (используется `install-chromedriver: true`)
-2. Добавлен webdriver-manager как fallback
-3. Добавлена проверка версий Chrome и ChromeDriver
-4. Обновлен setup-python до v5
+1. Переход на прямое скачивание без Selenium (быстрее и надежнее)
+2. Использует прямые ссылки на архивы RP5
+3. Не требует Chrome/ChromeDriver
+4. Работает через Node.js
 
-**Проблема была**: Старый метод установки ChromeDriver через wget больше не работал
+**Проблема была**: 
+- Selenium метод работал, но RP5 разрывал соединение при скачивании через requests
+- ChromeDriver требовал сложной настройки
 
-**Решение**: Используем встроенную установку ChromeDriver в action `browser-actions/setup-chrome@latest`
+**Решение**: Используем прямые URL архивов RP5 с правильными заголовками
 
 ---
 
@@ -71,30 +74,45 @@ python check-latest-run.py
 
 ## Настройка станций для скачивания
 
-Отредактируйте файл `rp5-github-action.py`:
+Отредактируйте файл `rp5-github-downloader.js`:
 
-```python
-stations = [
-    ('28573', '01.01.2016', '31.03.2026'),  # Ишим
-    ('26063', '01.01.2020', '31.03.2026'),  # Другая станция
-    # Добавьте свои станции здесь
-]
+```javascript
+const STATIONS = [
+  {
+    wmoId: '28573',
+    cityName: 'Ishim',
+    startDate: '2005-01-01',
+    endDate: '2026-04-02'
+  },
+  {
+    wmoId: '26063',
+    cityName: 'Moscow',
+    startDate: '2020-01-01',
+    endDate: '2026-04-02'
+  },
+  // Добавьте свои станции здесь
+];
 ```
 
-Формат: `(WMO_ID, дата_начала, дата_окончания)`
+Формат: `{ wmoId, cityName, startDate, endDate }` (даты в формате YYYY-MM-DD)
 
 ---
 
 ## Troubleshooting
 
-### Workflow падает с ошибкой "exit code 5"
-- Проверьте, что ChromeDriver установлен правильно
-- Убедитесь, что используется `install-chromedriver: true`
+### Workflow падает с ошибкой "exit code 1"
+- Проверьте логи скрипта в GitHub Actions
+- Убедитесь, что WMO ID правильный
+- Проверьте, что даты в формате YYYY-MM-DD
 
 ### Не скачиваются данные
-- Проверьте, что WMO ID правильный
-- Убедитесь, что даты в формате DD.MM.YYYY
+- Проверьте, что WMO ID существует на RP5
+- Убедитесь, что для станции есть архивные данные
 - Проверьте логи workflow
+
+### "Connection aborted" или "Remote end closed connection"
+- Это нормально для старого Selenium метода
+- Новый метод (прямое скачивание) решает эту проблему
 
 ### Изменения не коммитятся
 - Убедитесь, что файлы действительно изменились
@@ -105,8 +123,7 @@ stations = [
 ## История исправлений
 
 **02.04.2026**
-- ✅ Исправлен workflow download-rp5.yml (ChromeDriver installation)
-- ✅ Добавлен webdriver-manager как fallback для ChromeDriver
-- ✅ Добавлена проверка версий Chrome и ChromeDriver
-- ✅ Обновлен setup-python до v5
+- ✅ Переход на прямое скачивание без Selenium (download-rp5.yml)
+- ✅ Создан новый скрипт rp5-github-downloader.js
+- ✅ Упрощен workflow - не требует Python, Chrome, ChromeDriver
 - ✅ Исправлен workflow rp5-frequent.yml (парсинг wmo-mapping.js)
