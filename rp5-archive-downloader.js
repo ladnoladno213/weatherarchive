@@ -67,74 +67,95 @@ function buildRP5ArchiveURL(wmoId, startDate, endDate) {
  * @returns {Promise<string|null>} путь к распакованному CSV файлу или null
  */
 async function downloadRP5Archive(wmoId, startDate, endDate, cityName = null) {
-  const url = buildRP5ArchiveURL(wmoId, startDate, endDate);
+  // Пробуем разные серверы RP5
+  const servers = ['ru1', 'ru2', 'ru3', 'ru4', 'ru5'];
   
-  console.log(`[rp5-archive] Downloading archive for WMO ${wmoId}`);
-  console.log(`[rp5-archive] Period: ${startDate} to ${endDate}`);
-  console.log(`[rp5-archive] URL: ${url}`);
-  
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Accept-Encoding': 'gzip, deflate',
-        'Referer': 'https://rp5.ru/',
-        'Connection': 'keep-alive',
+  for (const server of servers) {
+    const baseUrl = `https://${server}.rp5.ru/download/files.synop`;
+    const formatDate = (dateStr) => {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}.${month}.${year}`;
+    };
+    
+    const startDateRP5 = formatDate(startDate);
+    const endDateRP5 = formatDate(endDate);
+    const folder = wmoId.substring(0, 2);
+    const fileName = `${wmoId}.${startDateRP5}.${endDateRP5}.1.0.0.ru.utf8.00000000.csv.gz`;
+    const url = `${baseUrl}/${folder}/${fileName}`;
+    
+    console.log(`[rp5-archive] Trying server ${server}...`);
+    console.log(`[rp5-archive] URL: ${url}`);
+    
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Referer': `https://rp5.ru/archive.php?wmo_id=${wmoId}&lang=ru`,
+          'Origin': 'https://rp5.ru',
+          'Connection': 'keep-alive',
+          'Sec-Fetch-Dest': 'empty',
+          'Sec-Fetch-Mode': 'cors',
+          'Sec-Fetch-Site': 'same-site',
+        }
+      });
+      
+      if (response.ok) {
+        console.log(`[rp5-archive] Success on server ${server}!`);
+        
+        // Создаём папку для CSV файлов
+        const csvDir = path.join(__dirname, 'data', 'rp5-csv');
+        if (!fs.existsSync(csvDir)) {
+          fs.mkdirSync(csvDir, { recursive: true });
+        }
+        
+        // Формируем имя файла (без .gz)
+        const city = cityName || wmoId;
+        const fileName = `${wmoId}.${startDate}.${endDate}.${city}.utf8.csv`;
+        const filePath = path.join(csvDir, fileName);
+        
+        // Скачиваем и распаковываем на лету
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        
+        console.log(`[rp5-archive] Downloaded ${(buffer.length / 1024).toFixed(2)} KB (compressed)`);
+        
+        // Распаковываем gzip
+        const decompressed = zlib.gunzipSync(buffer);
+        
+        console.log(`[rp5-archive] Decompressed to ${(decompressed.length / 1024).toFixed(2)} KB`);
+        
+        // Проверяем, что это CSV (должен начинаться с #)
+        const content = decompressed.toString('utf8');
+        if (!content.startsWith('#')) {
+          console.error('[rp5-archive] Invalid CSV format - does not start with #');
+          console.error('[rp5-archive] First 200 chars:', content.substring(0, 200));
+          continue; // Пробуем следующий сервер
+        }
+        
+        // Сохраняем файл
+        fs.writeFileSync(filePath, content, 'utf8');
+        
+        console.log(`[rp5-archive] Saved to: ${filePath}`);
+        console.log(`[rp5-archive] File size: ${(content.length / 1024).toFixed(2)} KB`);
+        
+        // Подсчитываем количество строк данных
+        const lines = content.split('\n').filter(line => line && !line.startsWith('#'));
+        console.log(`[rp5-archive] Data rows: ${lines.length}`);
+        
+        return filePath;
+      } else {
+        console.log(`[rp5-archive] Server ${server} returned: ${response.status} ${response.statusText}`);
       }
-    });
-    
-    if (!response.ok) {
-      console.error(`[rp5-archive] HTTP error: ${response.status} ${response.statusText}`);
-      return null;
+    } catch (error) {
+      console.log(`[rp5-archive] Server ${server} error: ${error.message}`);
     }
-    
-    // Создаём папку для CSV файлов
-    const csvDir = path.join(__dirname, 'data', 'rp5-csv');
-    if (!fs.existsSync(csvDir)) {
-      fs.mkdirSync(csvDir, { recursive: true });
-    }
-    
-    // Формируем имя файла (без .gz)
-    const city = cityName || wmoId;
-    const fileName = `${wmoId}.${startDate}.${endDate}.${city}.utf8.csv`;
-    const filePath = path.join(csvDir, fileName);
-    
-    // Скачиваем и распаковываем на лету
-    const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    
-    console.log(`[rp5-archive] Downloaded ${(buffer.length / 1024).toFixed(2)} KB (compressed)`);
-    
-    // Распаковываем gzip
-    const decompressed = zlib.gunzipSync(buffer);
-    
-    console.log(`[rp5-archive] Decompressed to ${(decompressed.length / 1024).toFixed(2)} KB`);
-    
-    // Проверяем, что это CSV (должен начинаться с #)
-    const content = decompressed.toString('utf8');
-    if (!content.startsWith('#')) {
-      console.error('[rp5-archive] Invalid CSV format - does not start with #');
-      console.error('[rp5-archive] First 200 chars:', content.substring(0, 200));
-      return null;
-    }
-    
-    // Сохраняем файл
-    fs.writeFileSync(filePath, content, 'utf8');
-    
-    console.log(`[rp5-archive] Saved to: ${filePath}`);
-    console.log(`[rp5-archive] File size: ${(content.length / 1024).toFixed(2)} KB`);
-    
-    // Подсчитываем количество строк данных
-    const lines = content.split('\n').filter(line => line && !line.startsWith('#'));
-    console.log(`[rp5-archive] Data rows: ${lines.length}`);
-    
-    return filePath;
-  } catch (error) {
-    console.error('[rp5-archive] Download failed:', error.message);
-    return null;
   }
+  
+  console.error('[rp5-archive] All servers failed');
+  return null;
 }
 
 /**
