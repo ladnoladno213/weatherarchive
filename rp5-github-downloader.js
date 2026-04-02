@@ -21,6 +21,9 @@ async function main() {
   console.log('='.repeat(70));
   console.log('RP5 GITHUB ACTIONS DOWNLOADER');
   console.log('='.repeat(70));
+  console.log(`Node.js version: ${process.version}`);
+  console.log(`Working directory: ${process.cwd()}`);
+  console.log('');
   
   let successCount = 0;
   let failCount = 0;
@@ -40,16 +43,17 @@ async function main() {
         console.log(`✅ Success: ${filePath}`);
         successCount++;
       } else {
-        console.error(`❌ Failed: ${station.wmoId}`);
+        console.error(`❌ Failed: ${station.wmoId} (download returned null)`);
         failCount++;
       }
     } catch (error) {
-      console.error(`❌ Error: ${error.message}`);
+      console.error(`❌ Error for station ${station.wmoId}:`, error.message);
+      console.error('Stack trace:', error.stack);
       failCount++;
     }
     
     // Пауза между запросами
-    if (STATIONS.length > 1) {
+    if (STATIONS.length > 1 && STATIONS.indexOf(station) < STATIONS.length - 1) {
       console.log('Waiting 5 seconds before next station...');
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
@@ -61,11 +65,20 @@ async function main() {
   
   // Выходим с ошибкой если были неудачи
   if (failCount > 0) {
+    console.error(`\nExiting with error code 1 due to ${failCount} failed downloads`);
     process.exit(1);
   }
+  
+  console.log('\nAll downloads completed successfully!');
+  process.exit(0);
 }
 
 main().catch(error => {
-  console.error('Fatal error:', error);
+  console.error('\n' + '='.repeat(70));
+  console.error('FATAL ERROR:');
+  console.error('='.repeat(70));
+  console.error('Message:', error.message);
+  console.error('Stack:', error.stack);
+  console.error('='.repeat(70));
   process.exit(1);
 });

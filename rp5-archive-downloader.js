@@ -15,6 +15,13 @@ const { pipeline } = require('stream/promises');
  * - Имя файла: WMO_ID.DD.MM.YYYY.DD.MM.YYYY.1.0.0.ru.utf8.00000000.csv.gz
  */
 
+// Проверяем доступность fetch (Node.js 18+)
+if (typeof fetch === 'undefined') {
+  console.error('[rp5-archive] ERROR: fetch is not available. Please use Node.js 18 or higher.');
+  console.error('[rp5-archive] Current Node.js version:', process.version);
+  process.exit(1);
+}
+
 // Загружаем маппинг WMO ID
 let wmoMapping = {};
 try {
