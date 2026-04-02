@@ -690,28 +690,10 @@ const regionsRu = require('./locales/regions-ru');
 // Кэш переводов штатов
 const _stateNameCache = new Map();
 
-// Получить русское название штата по его ISO коду
+// Получить русское название штата (используем английское название, так как локальной базы переводов нет)
 async function _getStateNameRu(countryCode, stateCode, englishName) {
-  const key = countryCode + '_' + stateCode;
-  if (_stateNameCache.has(key)) return _stateNameCache.get(key);
-  try {
-    // Ищем ADM1 по коду страны и коду штата
-    const data = await fetch(
-      'http://api.geonames.org/searchJSON?adminCode1=' + encodeURIComponent(stateCode) +
-      '&country=' + countryCode +
-      '&featureCode=ADM1&maxRows=1&lang=ru&username=' + GEONAMES_USER + '&style=FULL'
-    ).then(r => r.json());
-    const result = data.geonames && data.geonames[0];
-    if (result) {
-      const ruAlts = (result.alternateNames || []).filter(a => a.lang === 'ru').map(a => a.name);
-      const adminKw = /область|край|республика|округ|автономн/i;
-      const withKw = ruAlts.find(a => adminKw.test(a));
-      const name = withKw || result.name || englishName;
-      _stateNameCache.set(key, name);
-      return name;
-    }
-  } catch {}
-  _stateNameCache.set(key, englishName);
+  // Просто возвращаем английское название
+  // TODO: Можно добавить локальную базу переводов регионов
   return englishName;
 }
 
