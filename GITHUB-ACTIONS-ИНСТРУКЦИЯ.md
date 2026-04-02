@@ -28,7 +28,11 @@
 - Workflow: `.github/workflows/download-rp5.yml`
 - Скрипт: `rp5-github-action.py`
 
-**Последнее исправление**: Упрощена установка ChromeDriver (используется `install-chromedriver: true` в browser-actions/setup-chrome)
+**Последнее исправление**: 
+1. Упрощена установка ChromeDriver (используется `install-chromedriver: true`)
+2. Добавлен webdriver-manager как fallback
+3. Добавлена проверка версий Chrome и ChromeDriver
+4. Обновлен setup-python до v5
 
 **Проблема была**: Старый метод установки ChromeDriver через wget больше не работал
 
@@ -102,4 +106,7 @@ stations = [
 
 **02.04.2026**
 - ✅ Исправлен workflow download-rp5.yml (ChromeDriver installation)
+- ✅ Добавлен webdriver-manager как fallback для ChromeDriver
+- ✅ Добавлена проверка версий Chrome и ChromeDriver
+- ✅ Обновлен setup-python до v5
 - ✅ Исправлен workflow rp5-frequent.yml (парсинг wmo-mapping.js)
