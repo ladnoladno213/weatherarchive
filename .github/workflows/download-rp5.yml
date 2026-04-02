@@ -16,30 +16,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '20'
       
-      - name: Install dependencies
+      - name: Install Node dependencies
         run: |
-          pip install selenium requests webdriver-manager
+          npm install
       
-      - name: Setup Chrome and ChromeDriver
-        uses: browser-actions/setup-chrome@latest
-        with:
-          chrome-version: stable
-          install-chromedriver: true
-      
-      - name: Verify Chrome and ChromeDriver
+      - name: Download RP5 data (direct method)
         run: |
-          google-chrome --version
-          chromedriver --version
-          which chromedriver
-      
-      - name: Download RP5 data
-        run: |
-          python rp5-github-action.py
+          node rp5-github-downloader.js
       
       - name: Commit and push if changed
         run: |
